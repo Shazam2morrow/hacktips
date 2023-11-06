@@ -8,11 +8,11 @@ When a server uses HSTS, it sends a special response header, named `Strict-Trans
 
 There are also optional parameters like `includeSubDomains` and `preload`. If `includeSubDomains` is specified, the rule applies to all subdomains of the site as well. The `preload` parameter can be used to include the site in a list of sites hardcoded into the browser that are only accessible via HTTPS.
 
-## Key points
+## Things to remember
 
 The HSTS has the following features: 
 
-1. HSTS protection only kicks in after the user’s first visit to the site, following a principle known as [“trust on first use”](https://en.wikipedia.org/wiki/Trust_on_first_use). This means that the initial visit is still potentially vulnerable to certain types of attacks.
+1. HSTS protection only kicks in after the user’s first visit to the site, following a principle known as [“trust on first use” (TOFU)](https://en.wikipedia.org/wiki/Trust_on_first_use). This means that the initial visit is still potentially vulnerable to certain types of attacks.
 
 2. HSTS is more secure than simply configuring a HTTP to HTTPS (301) redirect on a server, where the initial HTTP connection is still vulnerable to a man-in-the-middle attack.
 
@@ -56,11 +56,9 @@ curl -v <target>
 
 ## Recommendations
 
-A web application should instruct web browsers to only access the application using an encrypted HTTPS channel. For that, HSTS should be enabled by adding a response header with the name `Strict-Transport-Security` and the value `max-age=expireTime`, where `expireTime` is the time in seconds that browsers should remember that the site should only be accessed using HTTPS.
+The application should instruct web browsers to only access the application using HTTPS. To do this, enable HTTP Strict Transport Security (HSTS) by adding a response header with the name `Strict-Transport-Security` and the value `max-age=expireTime`, where `expireTime` is the time in seconds that browsers should remember that the site should only be accessed using HTTPS.  Consider adding the `includeSubDomains` flag if appropriate.
 
-It is also recommended to set the expiration time of STS directive for at least 3 months period. Such an approach should limit the time windows for potential eavesdropping attack during which a malefactor could try to intercept transmitted unencrypted data.
-
-To apply the policy to all subdomains, the `includeSubDomains` flag could also be utilized. As an additional security measure, the domain should be submitted to an [HSTS preload service](https://hstspreload.org/).
+Note that because HSTS is a TOFU protocol, a user who has never accessed the application will never have seen the HSTS header, and will therefore still be vulnerable to SSL stripping attacks. To mitigate this risk, you can optionally add the `preload` flag to the HSTS header, and [submit the domain for review by browser vendors](https://hstspreload.org/).
 
 ## References
 
