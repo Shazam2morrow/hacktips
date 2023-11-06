@@ -22,13 +22,22 @@ The HSTS has the following features:
 
 ## Checklist
 
+### Agenda for symbols
+
+- ✅ denotes that the specific issue has been reviewed or checked
+- ❌ indicates that the specific issue has not been reviewed or checked yet
+- 🟢 denotes the absence of the vulnerability within the application
+- 🔴 signifies the presence of the vulnerability within the application
+
+### HSTS checklist
+
 The following checklist can be used to check for issues regarding HSTS:
 
-| **#** | **Status** | **Name** | **Description** | **Vulnerable** | **Notes** |
+| **№** | **Checked?** | **Issue Name** | **Issue Description** | **Vulnerable?** | **Notes** |
 |:-----:|:------------:|:--------:|:---------------:|:--------------:|:---------:|
-| 1 | ❌ | STS header is not used | In case a web server did not utilize the `Strict-Transport-Security` header for encrypted communication in any response | No | Any notes about the issue |
-| 2 | ✅ | STS header's expiration time is too small | In case the expiration time of the STS directive was set to a quite small value, like one day, for example. Such an approach could simplify a potential interception of an initial request (when the STS directive is outdated due to the expiration time) to the server sent by HTTP protocol | Yes | Any note about the issue |
-| 3 | ❌ | STS header contains incorrect directive | In case the syntax of the directive is not correct a browser will ignore it marking it as an incorrect one effectively providing no protection as a consequence | No | Any notes about the issue |
+| 1 | ❌ | STS header is not used | In case a web server did not utilize the `Strict-Transport-Security` header for encrypted communication in any response | 🟢 | Any notes about the issue |
+| 2 | ✅ | STS header's expiration time is too small | In case the expiration time of the STS directive was set to a quite small value, like one day, for example. Such an approach could simplify a potential interception of an initial request (when the STS directive is outdated due to the expiration time) to the server sent by HTTP protocol | 🔴 | Any note about the issue |
+| 3 | ❌ | STS header contains incorrect directive | In case the syntax of the directive is not correct a browser will ignore it marking it as an incorrect one effectively providing no protection as a consequence | 🟢 | Any notes about the issue |
 
 ## Tools
 
