@@ -76,3 +76,4 @@ Note that because HSTS is a TOFU protocol, a user who has never accessed the app
 3. [The double-edged sword of HSTS persistence and privacy](https://www.leviathansecurity.com/media/the-double-edged-sword-of-hsts-persistence-and-privacy)
 4. [Chromium HSTS](https://www.chromium.org/hsts/)
 5. [HTTP Strict Transport Security - Wikipedia](https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security)
+6. [sslstrip - tool for MITM attacks](https://github.com/moxie0/sslstrip)
