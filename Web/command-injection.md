@@ -2,9 +2,9 @@
 
 This attack is also know as __operating system (OS) command injection__ or [__shell injection__](https://en.wikipedia.org/wiki/Code_injection#Shell_injection).
 
-## DISCLAIMER⚠️
+## DISCLAIMER
 
-**__EXPLOITATION OF THIS ISSUE CAN HAVE SEVERE CONSEQUENCES FOR THE VULNERABLE SYSTEM. BE SURE YOU KNOW WHAT YOU ARE DOING❗__**
+**__EXPLOITATION OF THIS ISSUE CAN HAVE SEVERE CONSEQUENCES FOR THE VULNERABLE SYSTEM❗__**
 
 ## Description
 
@@ -63,7 +63,7 @@ Certain commands can be used to trigger a time delay to confirm that the command
 
 #### Ping
 
-The `ping` command is a good and safe way to do it because it allows to specify the number of ICMP packets to send. Usually one packet is sent each second so if you send ten packets then it will take ten seconds to execute. When `ping` command sends an ICMP packet with `TTL=64` that signals Linux OS while `TTLS=128` signals Windows OS.
+The `ping` command is a good and safe way to do it because it allows to specify the number of ICMP packets to send. Usually one packet is sent each second so if you send ten packets then it will take ten seconds to execute. When `ping` command sends an ICMP packet with `TTL=64` that signals Linux OS while `TTL=128` signals Windows OS.
 
 ```
 $ ping -c 10 127.0.0.1
@@ -93,7 +93,7 @@ The `sleep` command is another way to trigger a time delay and as the `ping` com
 
 ### Exploiting blind OS command injection by redirecting output
 
-Sometimes one can redirect output of a command into a file which is accessible by him. For example, a web application can store static resources in the `/var/www/static` that are publicely available to the users and if the application is vulnerable then the following command will redirect output of the command and store it in the file that is accessible by anyone:
+Sometimes one can redirect output of a command into a file which is accessible by him. For example, a web application can store static resources in the `/var/www/static` that are publicly available to the users and if the application is vulnerable then the following command will redirect output of the command and store it in the file that is accessible by anyone:
 
 ```whoami > /var/www/static/whoami.txt```
 
@@ -101,7 +101,7 @@ Sometimes one can redirect output of a command into a file which is accessible b
 
 Injected command can be used to trigger an out-of-band interaction with a controlled system. This technique is especially good in cases where the result of command execution is not displayed.
 
-There are multiple ways to establish the out-of-band interaction but the most frequently used are DNS and HTTP protocols. No matter which protocol or command is used to establish the out-of-band interaction the attacker can monitor to see if the lookup happens, to confirm if the command was successfully injeted.
+There are multiple ways to establish the out-of-band interaction but the most frequently used are DNS and HTTP protocols. No matter which protocol or command is used to establish the out-of-band interaction the attacker can monitor to see if the lookup happens, to confirm if the command was successfully injected.
 
 #### DNS
 
@@ -129,15 +129,15 @@ This command can also be combined with other commands or shell metacharacters as
 
 ## Shell features
 
-One can inject code into this program in several ways by exploiting the syntax of various shell features:
+There are multiple ways a command can be injected using one of the shell features.
 
 | **Shell feature** | **OS** | **Example** | **Explanation** |
 |:------------------|:-------:|:------------:|:-------------:|
 | Sequential execution | Linux | `command1 ; command 2` | Executes `command1`, then executes `command2` |
 | Pipeline | Linux, Windows | `command1 \| command2` | Sends the output of `command1` as input to `command2` |
 | Command substitution | Linux | ``command1 `command2` `` or `command1 $(command2)` | Sends the output of `command2` as arguments to `command1` |
-| AND list | Linux, Windows | `command1 && command2` | Executes `command2` if `command1` returns an exit status of 0 (sucess) |
-| OR list | Linux, Windws | `command1 \|\| command2` | Executes `command2` if `command1` returns a non-zero exit status (error) |
+| AND list | Linux, Windows | `command1 && command2` | Executes `command2` if `command1` returns an exit status of 0 (success) |
+| OR list | Linux, Windows | `command1 \|\| command2` | Executes `command2` if `command1` returns a non-zero exit status (error) |
 | Output redirection | Linux, Windows | `command1 > test.txt` | Overwrites the content of `test.txt` file with the output of `command1` |
 | Input redirection | Linux, Windows | `command1 < test.txt` | Sends the content of `test.txt` file as input to `command1` |
 
@@ -147,42 +147,49 @@ Sometimes, the input that the attacker controls appears within quotation marks i
 
 ## Useful commands
 
-After the command injection vulnerability has been identified, it is usefull to execute some initial commands to get some information about the system.
+After the command injection vulnerability has been identified, it is useful to execute some initial commands to get some information about the system.
 
 | **Purpose of command**   | **Linux**     | **Windows**     |
 |:-------------------------|:-------------:|:---------------:|
 | Name of the current user | `whoami`      | `whoami`        |
-| OS details               | `uname -a`    | `uname -a`      |
+| OS details               | `uname -a`    | `systeminfo`      |
 | Network config           | `ifconfig -a` | `ipconfig /all` |
 | Network connections      | `netstat -an` | `netstat -an`   |
 | Running processes        | `ps -ef`      | `tasklist`      |
 
 ## Recommendations
 
-- Sanitize User Input
+In order to protect an application from the command injection attacks it is crucial to implement strong input sanitization and access segregation rules.
 
-    1. Implement a strict allow list approach for validating user input. Create a list containing only allowable characters or commands, eliminating any characters not explicitly permitted.
-    2. Utilize an allow list for both URL and form data, filtering out characters known to be associated with command injection vulnerabilities.
-    3. Consider a general deny list to include characters commonly used in command injection attacks, such as |, ;, &, $, >, <, ', \, !, >>, #.
+### Sanitize User Input
 
-- Permissions and Execution Control
+1. Implement a strict white-list approach for validating user input. Create a list containing only allowable characters or commands, eliminating any characters not explicitly permitted.
 
-    1. Ensure that the web application and its components run under strict permissions that prohibit operating system command execution.
-    2. Verify permissions and execution capabilities from a gray-box testing perspective, assessing potential vulnerabilities and areas of weakness.
+2. Utilize a white-list for both URL and form data, filtering out characters known to be associated with command injection vulnerabilities.
 
-- Use Existing APIs or Implement Strong Input Validation
+3. Consider a general black-list to include characters commonly used in command injection attacks, such as `|`, `;`, `&`, `$`, `>`, `<`, `'`, `\`, `!`, `>>`, `#`, `` ` ``.
 
-    1. Prefer existing APIs provided by the programming language or framework over executing OS commands directly.
-    2. Scrub all user input for malicious characters, implementing a positive security model by defining legal characters rather than illegal ones.
-    3. If using user-supplied input in OS commands:
-        - Validate against a whitelist of permitted values.
-        - Validate that the input is a number if applicable.
-        - Validate that the input contains only alphanumeric characters, excluding any other syntax or whitespace.
-        - Avoid attempting to sanitize input by escaping shell metacharacters, as this method is prone to errors and can be bypassed by skilled attackers.
+### Permissions and Execution Control
+
+1. Ensure that the web application and its components run under strict permissions that prohibit operating system command execution (least privilege principle).
+
+2. Verify permissions and execution capabilities from a gray-box testing perspective, assessing potential vulnerabilities and areas of weakness.
+
+### Use Existing APIs or Implement Strong Input Validation
+
+1. Prefer existing APIs provided by the programming language or framework over executing OS commands directly.
+
+2. Scrub all user input for malicious characters, implementing a positive security model by defining legal characters rather than illegal ones.
+
+3. If using user-supplied input in OS commands:
+    - Validate against a whitelist of permitted values.
+    - Validate that the input is a number if applicable.
+    - Validate that the input contains only alphanumeric characters, excluding any other syntax or whitespace.
+    - Avoid attempting to sanitize input by escaping shell metacharacters, as this method is prone to errors and can be bypassed by skilled attackers.
 
 ## Labs
 
-- [PortSwigger - OS Command Injection Labs](https://portswigger.net/web-security/all-labs#os-command-injection)
+- [OS Command Injection Labs - PortSwigger](https://portswigger.net/web-security/all-labs#os-command-injection)
 
 ## Videos
 1. [Web Security Academy - Command Injection Playlist](https://www.youtube.com/playlist?list=PLuyTk2_mYISK9ywsFZZOT1LuO3Eb7Wq5q)
