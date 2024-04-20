@@ -1,14 +1,14 @@
-# Initial Server Setup With Ubuntu
+# Initial Server Setup
 
 ## Prerequisites
 
-The utilized OS version is Ubuntu 22.04 (LTS) x64 with 1 CPU, 1 GB RAM and 25 GB disk.
+The utilized version of operating system (OS) is **Ubuntu 22.04 (LTS) x64** with **1 CPU**, **1 GB RAM** and **25 GB** disk.
 
 When you first create a new Ubuntu server, you should perform some important configuration steps as part of the initial setup. These steps will increase the security and usability of the server and will give you a solid foundation for subsequent actions.
 
 ## Step 1 - Getting a server
 
-The first step is to get a server. You can either use you own physical server or rent it using one of the popular cloud providers like **Amazon**, **Cloudflare** or **DigitalOcean**.
+The first step is to get a server. You can either use your own physical server or rent it using one of the popular cloud providers like **Amazon**, **Cloudflare** or **DigitalOcean**.
 
 ## Step 2 - Finding server's public IP address
 
@@ -17,6 +17,8 @@ The next step is to connect to the server but to log in to it you need to know i
 Very often cloud providers allow you to view it via a control panel or if you are already singed in you can view it using `ifconfig` command (elevated privileges are required):
 
 ```bash
+$ ifconfig
+
 eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         inet 152.233.17.47  netmask 255.255.240.0  broadcast 134.209.255.255
         inet6 fe80::c09d:5dff:febf:cac7  prefixlen 64  scopeid 0x20<link>
@@ -60,7 +62,7 @@ Generally, there are two types of interfaces: **public** and **private**.
 
 Public interfaces are intended for communication with the outer world, while private interfaces are used for communication within a private network and are not accessible from the Internet.
 
-This differentiation allows isolating certain servers from public access while still enabling communication with other servers inside the same private network. It facilitates the construction of something called a Virtual Private Cloud (VPC).
+This differentiation allows isolating certain servers from public access while still enabling communication with other servers inside the same private network. It facilitates the construction of something called a **VPC (aka Virtual Private Cloud)**.
 
 In the previous example, there is one public interface `eth0`, two private interfaces `eth1` and `tun0`, and one special interface `lo` called **loopback**, which is usually used for testing purposes on a local machine because it is always available.
 
@@ -148,7 +150,7 @@ Configuring a firewall can be complex, especially for beginners, but there are s
 
 Ubuntu servers can utilize **UFW (aka Uncomplicated Firewall)** to control which connections to specific services are permitted. You can establish a basic firewall using this utility.
 
-When applications are installed, they can register their profiles with UFW, enabling **UFW** to manage them by name. For instance, OpenSSH, which facilitates server connections, comes with a pre-registered profile in **UFW**.
+When applications are installed, they can register their profiles with **UFW**, enabling **UFW** to manage them by name. For instance, OpenSSH, which facilitates server connections, comes with a pre-registered profile in **UFW**.
 
 To view a list of installed **UFW** profiles, use the following command:
 
@@ -235,3 +237,7 @@ $ sudo [COMMAND]
 ```
 
 You will be prompted for your regular user’s password when using `sudo` for the first time each session (and periodically afterward).
+
+## References 
+
+- [Initial Server Setup With Ubuntu](https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu#if-the-root-account-uses-password-authentication)
