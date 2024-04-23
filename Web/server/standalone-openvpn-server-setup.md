@@ -841,7 +841,75 @@ The site will return the IP address assigned by your internet service provider a
 
 If you see a country that is different from where you are currently then you have configured everything correctly.
 
-Congratulations now you have your own VPN server.
+## Step 15 - Revoking client certificates
+
+Occasionally, you may need to revoke a client certificate to prevent further access to the **OpenVPN Server**.
+
+The revocation process is done on the **CA Server**, so you need to execute the following commands there.
+
+To revoke a certificate, navigate to the `easy-rsa` directory on your **CA Server**:
+
+```bash
+$ cd ~/easy-rsa
+```
+
+Next, run the `easyrsa` script with the `revoke` option, followed by the client name you wish to revoke. Following the practice example above, the CN of the certificate is `e8b4e806-ac48-4cd5-b7e6-4e714711cc50`:
+
+```bash
+$ ./easyrsa revoke e8b4e806-ac48-4cd5-b7e6-4e714711cc50
+```
+
+This will ask you to confirm the revocation by entering `yes`.
+
+After confirming the action, the CA will revoke the certificate. However, remote systems that rely on the CA have no way to check whether any certificates have been revoked. Users and servers will still be able to use the certificate until the CA’s **Certificate Revocation List (CRL)** is distributed to all systems that rely on the CA.
+
+Now that you have revoked a certificate, it is important to update the list of revoked certificates on your CA server. Once you have an updated revocation list you will be able to tell which users and systems have valid certificates in your CA.
+
+To generate a CRL, run the `easy-rsa` command with the `gen-crl` option while still inside the `~/easy-rsa` directory:
+
+```bash
+$ ./easyrsa gen-crl
+```
+
+If you have used a passphrase when creating your `ca.key` file, you will be prompted to enter it. The `gen-crl` command will generate a file called `crl.pem`, containing the updated list of revoked certificates for that CA.
+
+Next you’ll need to transfer the updated `crl.pem` file to all servers and clients that rely on this CA each time you run the `gen-crl` command. Otherwise, clients and systems will still be able to access services and systems that use your CA, since those services need to know about the revoked status of the certificate.
+
+You can do it using SCP command we used before to upload CRL to our **OpenVPN Server**:
+
+```bash
+$ scp ~/easy-rsa/pki/crl.pem johndoe@[OPENVPN_SERVER_IP]:/tmp
+```
+
+Once you have revoked a certificate for a client using those instructions, you will need to copy the generated `crl.pem` file to your OpenVPN server in the `/etc/openvpn/server` directory:
+
+```bash
+$ sudo cp /tmp/crl.pem /etc/openvpn/server/
+```
+
+Next, open the OpenVPN server configuration file:
+
+```bash
+$ sudo vi /etc/openvpn/server/server.conf
+```
+
+At the bottom of the file, add the `crl-verify` option, which will instruct the **OpenVPN Server** to check the certificate revocation list that you created each time a connection attempt is made:
+
+```bash
+crl-verify crl.pem
+```
+
+Save and close the file.
+
+Finally, restart OpenVPN to implement the certificate revocation:
+
+```bash
+$ sudo systemctl restart openvpn-server@server.service
+```
+
+The client should no longer be able to successfully connect to the server using the old credential.
+
+You can use this process to revoke any certificates that you have previously issued for your server.
 
 ## References
 
