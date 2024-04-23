@@ -1,4 +1,6 @@
-# How To Set Up and Configure Standalone OpenVPN Server
+# How To Configure Standalone OpenVPN Server
+
+This guide will work you through a set up process of standalone OpenVPN server supporting multiple clients.
 
 ## Prerequisites
 
@@ -21,7 +23,7 @@ In addition to that, you will need a client machine which you will use to connec
 
 ### Wny should I use standalone CA server?
 
-For optimal security, it's advised not to use your **OpenVPN Server** or local machine as your CA. Doing so could expose your VPN to potential vulnerabilities. According to the official OpenVPN documentation, the best practice is to set up your CA on a standalone machine dedicated to handling certificate requests.
+For optimal security, it's advised not to use your **OpenVPN Server** or local machine as your CA. Doing so could expose your VPN to potential vulnerabilities. [According to the official OpenVPN documentation](https://openvpn.net/community-resources/how-to/#setting-up-your-own-certificate-authority-ca-and-generating-certificates-and-keys-for-an-openvpn-server-and-multiple-clients), the best practice is to set up your CA on a standalone machine dedicated to handling certificate requests.
 
 ## Introduction
 
@@ -31,7 +33,7 @@ Additionally, OpenVPN allows for user or group-specific access control policies 
 
 It is also important to note that if you are renting a server from one of the popular cloud providers you must be aware that **they usually charge for bandwidth overages**. So be mindful of how much traffic your server is handling.
 
-To follow the rest of the tutorial you must be able to log in to your servers using SSH as sudo non-root user.
+To follow the rest of the tutorial you must be able to log in to your servers using SSH as sudo non-root user. During this guide user `johhdoe` will have such privileges.
 
 ## Step 1 - Updating system packages
 
@@ -40,9 +42,9 @@ Before we proceed with configuration we have to make sure we have the latest upd
 To update your system run the following commands in a sequence:
 
 ```bash
-$ apt update
-$ apt upgrade
-$ reboot
+$ sudo apt update
+$ sudo apt upgrade
+$ sudo reboot
 ```
 After that your server will be restarted and you will have to reconnect to it after a few minutes.
 
@@ -55,7 +57,7 @@ Easy-RSA is a **public key infrastructure (PKI)** management tool that you will 
 Run the command below to install them:
 
 ```bash
-$ apt install openvpn easy-rsa
+$ sudo apt install openvpn easy-rsa
 ```
 
 Next you will need to create a new directory on the **OpenVPN Server** as your non-root user called `~/easy-rsa`:
@@ -72,11 +74,11 @@ $ ln -s /usr/share/easy-rsa/* ~/easy-rsa/
 
 As a result, any updates to the `easy-rsa` package will be automatically reflected in your PKI’s scripts.
 
-Finally, ensure the directory’s owner is your non-root sudo user and restrict access to that user using `chmod` replacing `[USERNAME]`:
+Finally, ensure the directory’s owner is your non-root sudo user and restrict access to that user using `chmod`:
 
 ```bash
-$ chown [USERNAME] ~/easy-rsa
-$ chmod 700 /home/[USERNAME]/easy-rsa
+$ chown johndoe ~/easy-rsa
+$ chmod 700 /home/johndoe/easy-rsa
 ```
 
 ## Step 3 - Creating a PKI for OpenVPN
@@ -99,7 +101,7 @@ set_var EASYRSA_DIGEST "sha512"
 
 Configuring your OpenVPN and CA servers to utilize **Elliptic Curve Cryptography (ECC)** allows for faster key exchanges between clients and the server. This is achieved through **Elliptic Curve** algorithms, which are notably quicker than the traditional **RSA** algorithm used with **Diffie-Hellman** for key exchanges.
 
-When clients connect to the **OpenVPN Server**, they initiate a TLS handshake using asymmetric encryption. However, once the connection is established, symmetric encryption, aka shared key encryption, is used for transmitting VPN traffic.
+When clients connect to the **OpenVPN Server**, they initiate a TLS handshake using asymmetric encryption. However, once the connection is established, symmetric encryption, aka **shared key encryption**, is used for transmitting VPN traffic.
 
 Symmetric encryption offers reduced computational overhead compared to asymmetric encryption due to smaller numbers and optimized operations on modern CPUs. The transition from asymmetric to symmetric encryption involves utilizing the **Elliptic Curve Diffie-Hellman (ECDH)** algorithm to swiftly agree upon a shared secret key between the **OpenVPN Server** and client.
 
@@ -139,16 +141,16 @@ If you enter '.', the field will be left blank.
 Common Name (eg: your user, host, or server name) [openvpn]:
 
 Keypair and certificate request completed. Your files are:
-req: /home/[USERNAME]/easy-rsa/pki/reqs/openvpn.req
-key: /home/[USERNAME]/easy-rsa/pki/private/openvpn.key
+req: /home/johndoe/easy-rsa/pki/reqs/openvpn.req
+key: /home/johndoe/easy-rsa/pki/private/openvpn.key
 ```
 
 In this case CN of our certificate is `openvpn`.
 
-This will create a private key for the server and a certificate request file called `server.req`. Copy the server key to the `/etc/openvpn/server` directory:
+This will create a private key for the server and a certificate request file called `openvpn.req`. Copy the server key to the `/etc/openvpn/server` directory:
 
 ```bash
-$ sudo cp /home/[USERNAME]/easy-rsa/pki/private/openvpn.key /etc/openvpn/server/
+$ sudo cp /home/johndoe/easy-rsa/pki/private/openvpn.key /etc/openvpn/server/
 ```
 
 Once you have completed these steps, you have successfully generated a private key for your **OpenVPN Server** and created a CSR. The CSR is now ready for signing by your **CA Server**'s private key.
@@ -163,19 +165,19 @@ You can copy files directly from your **OpenVPN Server** to **CA Server** an vis
 
 Another way is to use your local machine to first download a file from one server and then send it to another server.
 
-The command below will download `openvpn.req` from the **OpenVPN Server** and store it at the `/home/[USERNAME]/Downloads` folder on the local machine:
+The command below will download `openvpn.req` from the **OpenVPN Server** and store it at the `/home/johndoe/Downloads` folder on the local machine:
 
 ```bash
-$ scp [USERNAME]@[OPENVPN_SERVER_IP]:/home/[USERNAME]/easy-rsa/pki/reqs/openvpn.req ~/Downloads/openvpn.req
+$ scp johndoe@[OPENVPN_SERVER_IP]:/home/johndoe/easy-rsa/pki/reqs/openvpn.req ~/Downloads/openvpn.req
 ```
 
-The command below will upload file at `/home/[USERNAME]/Downloads/openvpn.req` on the local host at `/tmp` folder on the **CA Server**:
+The command below will upload file at `/home/johndoe/Downloads/openvpn.req` on the local host at `/tmp` folder on the **CA Server**:
 
 ```bash
-$ scp ~/Downloads/openvpn.req [USERNAME]@[CA_SERVER_IP]:/tmp
+$ scp ~/Downloads/openvpn.req johndoe@[CA_SERVER_IP]:/tmp
 ```
 
-The next step is to log in to the **CA Server** as the non-root user that you created to manage your CA. You will `cd` to the `~/easy-rsa` directory where you created your PK and then import the certificate request using the easyrsa script:
+The next step is to log in to the **CA Server** as the non-root user that you created to manage your CA. You will `cd` to the `~/easy-rsa` directory where you created your PK and then import the certificate request using the `easyrsa` script:
 
 ```bash
 $ cd ~/easy-rsa
@@ -197,7 +199,7 @@ $ ./easyrsa sign-req server openvpn
 Write out database with 1 new entries
 Data Base Updated
 
-Certificate created at: /home/[USERNAME]/easy-rsa/pki/issued/openvpn.crt
+Certificate created at: /home/johndoe/easy-rsa/pki/issued/openvpn.crt
 ```
 
 After encrypting your CA private key, remember that you will need to enter your password when prompted.
@@ -207,13 +209,13 @@ Once you have completed these steps, you have effectively signed the **OpenVPN S
 To finish configuring the certificates, copy the `openvpn.crt` and `ca.crt` files from the **CA Server** to the **OpenVPN Server** using your local host:
 
 ```bash
-$ scp [USERNAME]@[CA_SERVER_IP]:/home/[USERNAME]/easy-rsa/pki/issued/openvpn.crt ~/Downloads/openvpn.crt
+$ scp johndoe@[CA_SERVER_IP]:/home/johndoe/easy-rsa/pki/issued/openvpn.crt ~/Downloads/openvpn.crt
 
-$ scp [USERNAME]@[CA_SERVER_IP]:/home/[USERNAME]/easy-rsa/pki/ca.crt ~/Downloads/ca.crt
+$ scp johndoe@[CA_SERVER_IP]:/home/johndoe/easy-rsa/pki/ca.crt ~/Downloads/ca.crt
 
-$ scp ~/Downloads/openvpn.crt [USERNAME]]@[OPENVPN_SERVER_IP]:/tmp
+$ scp ~/Downloads/openvpn.crt johndoe]@[OPENVPN_SERVER_IP]:/tmp
 
-$ scp ~/Downloads/ca.crt [USERNAME]]@[OPENVPN_SERVER_IP]:/tmp
+$ scp ~/Downloads/ca.crt johndoe]@[OPENVPN_SERVER_IP]:/tmp
 ```
 
 Now back on your **OpenVPN Server**, copy the files from `/tmp` to /`etc/openvpn/server`:
@@ -247,7 +249,7 @@ With these files in place on the **OpenVPN Server** you are ready to create clie
 
 # Step 7 — Generating a client certificate and key pair
 
-This guide outlines a streamlined process for generating a certificate request directly on the **OpenVPN Server**, eliminating the need to transfer keys, certificates, and configuration files to clients manually. By following this approach, you can automate the creation of client configuration files, simplifying the process of joining the VPN.
+This section outlines a streamlined process for generating a certificate request directly on the **OpenVPN Server**, eliminating the need to transfer keys, certificates, and configuration files to clients manually. By following this approach, you can automate the creation of client configuration files, simplifying the process of joining the VPN.
 
 You will generate a single client key and certificate pair following the steps outlined in this guide. If you have multiple clients, you can replicate this process for each one, ensuring to assign a unique name value to the script for every client. Throughout this tutorial, the initial certificate/key pair is denoted as `e8b4e806-ac48-4cd5-b7e6-4e714711cc50`.
 
@@ -287,7 +289,7 @@ $ cp pki/private/e8b4e806-ac48-4cd5-b7e6-4e714711cc50.key ~/client-configs/keys/
 Next, transfer the `e8b4e806-ac48-4cd5-b7e6-4e714711cc50.req` file to your **CA Server** using a secure method:
 
 ```bash
-$ scp pki/reqs/e8b4e806-ac48-4cd5-b7e6-4e714711cc50.req [USERNAME]@[CA_SERVER_IP]:/tmp
+$ scp pki/reqs/e8b4e806-ac48-4cd5-b7e6-4e714711cc50.req johndoe@[CA_SERVER_IP]:/tmp
 ```
 
 Now log in to your **CA Server**. Then, navigate to the EasyRSA directory, and import the certificate request:
@@ -313,7 +315,7 @@ Again, if you encrypted your CA key, you’ll be prompted for your password here
 This will create a client certificate file named `e8b4e806-ac48-4cd5-b7e6-4e714711cc50.crt`. Transfer this file back to the server:
 
 ```bash
-$ scp pki/issued/e8b4e806-ac48-4cd5-b7e6-4e714711cc50.crt [USERNAME]@[OPENVPN_SERVER_IP]:/tmp
+$ scp pki/issued/e8b4e806-ac48-4cd5-b7e6-4e714711cc50.crt johndoe@[OPENVPN_SERVER_IP]:/tmp
 ```
 
 Back on your **OpenVPN Server**, copy the client certificate to the `~/client-configs/keys/` directory:
@@ -327,7 +329,7 @@ Next, copy the `ca.crt` and `ta.key` files to the `~/client-configs/keys/` direc
 ```bash
 $ cp ~/easy-rsa/ta.key ~/client-configs/keys/
 $ sudo cp /etc/openvpn/server/ca.crt ~/client-configs/keys/
-$ sudo chown [USERNAME].[USERNAME] ~/client-configs/keys/*
+$ sudo chown johndoe.johndoe ~/client-configs/keys/*
 ```
 
 With that, your server and client’s certificates and keys have all been generated and are stored in the appropriate directories on your **OpenVPN Server**.
@@ -375,7 +377,7 @@ Next, find the line containing a `dh` directive, which defines Diffie-Hellman pa
 dh none
 ```
 
-Next, OpenVPN should run with no privileges once it has started, so you will need to tell it to run with a user nobody and group nogroup. To enable this, find and uncomment the `user nobody` and `group nogroup` lines by removing the `;` sign from the beginning of each line:
+Next, OpenVPN should run with no privileges once it has started, so you will need to tell it to run with a user `nobody` and group `nogroup`. To enable this, find and uncomment the `user nobody` and `group nogroup` lines by removing the `;` sign from the beginning of each line:
 
 ```bash
 user nobody
@@ -774,7 +776,7 @@ Once that package is installed, configure the client to use it, and to send all 
 Open the client’s VPN file:
 
 ```bash
-$ nano e8b4e806-ac48-4cd5-b7e6-4e714711cc50.ovpn
+$ vi e8b4e806-ac48-4cd5-b7e6-4e714711cc50.ovpn
 ```
 
 Now uncomment the following lines that you added earlier:
@@ -826,7 +828,7 @@ down /etc/openvpn/update-resolv-conf
 ### Connecting
 
 ```bash
-$ sudo openvpn --config client1.ovpn
+$ sudo openvpn --config e8b4e806-ac48-4cd5-b7e6-4e714711cc50.ovpn
 ```
 
 This should connect you to your VPN Server.
