@@ -247,7 +247,7 @@ $ sudo cp ta.key /etc/openvpn/server
 
 With these files in place on the **OpenVPN Server** you are ready to create client certificates and key files for your users, which you will use to connect to the VPN.
 
-# Step 7 — Generating a client certificate and key pair
+## Step 7 — Generating a client certificate and key pair
 
 This section outlines a streamlined process for generating a certificate request directly on the **OpenVPN Server**, eliminating the need to transfer keys, certificates, and configuration files to clients manually. By following this approach, you can automate the creation of client configuration files, simplifying the process of joining the VPN.
 
@@ -334,7 +334,7 @@ $ sudo chown johndoe.johndoe ~/client-configs/keys/*
 
 With that, your server and client’s certificates and keys have all been generated and are stored in the appropriate directories on your **OpenVPN Server**.
 
-# Step 8 — Configuring OpenVPN
+## Step 8 — Configuring OpenVPN
 
 OpenVPN, like many other popular open-source tools, offers a wide array of configuration options to tailor your server to your unique requirements.
 
@@ -438,7 +438,7 @@ key openvpn.key
 ```
 When you are finished, save and close the file.
 
-# Step 9 — Adjusting the **OpenVPN Server** networking configuration
+## Step 9 — Adjusting the **OpenVPN Server** networking configuration
 
 There are some aspects of the server’s networking configuration that need to be tweaked so that OpenVPN can correctly route traffic through the VPN. The first of these is IP forwarding, a method for determining where IP traffic should be routed. This is essential to the VPN functionality that your server will provide.
 
@@ -462,7 +462,7 @@ $ sudo sysctl -p
 
 Now your **OpenVPN Server** will be able to forward incoming traffic from one ethernet device to another. This setting makes sure the server can direct traffic from clients that connect on the virtual VPN interface out over its other physical ethernet devices. This configuration will route all web traffic from your client via your server’s IP address, and your client’s public IP address will effectively be hidden.
 
-# Step 10 — Firewall configuration
+## Step 10 — Firewall configuration
 
 After successfully installing OpenVPN on your server, configuring it, and generating the necessary keys and certificates for client access, the next step involves directing incoming web traffic from clients. 
 
@@ -534,7 +534,7 @@ $ sudo ufw enable
 
 Your server is now configured to correctly handle OpenVPN traffic. With the firewall rules in place, you can start the OpenVPN service on the server.
 
-# Step 11 — Starting OpenVPN
+## Step 11 — Starting OpenVPN
 
 OpenVPN runs as a `systemd` service, so you can use `systemctl` to manage it. You will configure OpenVPN to start up at boot so you can connect to your VPN at any time as long as your server is running. To do this, enable the OpenVPN service by adding it to `systemctl`:
 
@@ -554,13 +554,13 @@ Double check that the OpenVPN service is active with the following command. You 
 $ sudo systemctl status openvpn-server@server.service
 ```
 
-# Step 12 — Creating the client configuration infrastructure
+## Step 12 — Creating the client configuration infrastructure
 
 Creating configuration files for OpenVPN clients can be somewhat involved. Each client requires its own configuration file, which must align with the settings outlined in the server’s configuration file. Instead of creating a single configuration file usable for only one client, this process establishes a client configuration infrastructure. This infrastructure enables the generation of config files on-the-fly. 
 
 Initially, you will craft a “base” configuration file. Subsequently, you will develop a script to generate unique client config files, certificates, and keys as required.
 
-## Creating a base configuration file
+### Creating a base configuration file
 
 Get started by creating a new directory where you will store client configuration files within the client-configs directory you created earlier:
 
@@ -672,7 +672,7 @@ Now add another set of lines for clients that use `systemd-resolved` for DNS res
 
 Save and close the file when you are finished.
 
-## Creating a script for generating client configuration
+### Creating a script for generating client configuration
 
 Next, you will create a script that will compile your base configuration with the relevant certificate, key, and encryption files and then place the generated configuration in the `~/client-configs/files` directory. Open a new file called `make_config.sh` within the `~/client-configs` directory:
 
@@ -718,7 +718,7 @@ By utilizing this method, you streamline the management of client configurations
 
 It's important to note that each time you onboard a new client, you must generate new keys and certificates before executing this script to create their configuration file. This script will be an integral part of your workflow for adding new clients, providing you with a quick and efficient means to organize and generate configuration files.
 
-# Step 13 — Generating client configurations
+## Step 13 — Generating client configurations
 
 If you followed along with the guide, you created a client certificate and key named `e8b4e806-ac48-4cd5-b7e6-4e714711cc50.crt` and `e8b4e806-ac48-4cd5-b7e6-4e714711cc50.key`, respectively. You can generate a config file for these credentials by moving into your `~/client-configs` directory and running the script you made at the end of the previous step:
 
@@ -735,15 +735,15 @@ $ ls ~/client-configs/files
 
 You need to transfer this file to the device you plan to use as the client. For instance, this could be your local computer or a mobile device.
 
-# Step 14 — Installing the client configuration
+## Step 14 — Installing the client configuration
 
 This section covers how to install a client VPN profile on Linux and Android. None of these client instructions are dependent on one another, so feel free to skip to whichever is applicable to your device.
 
 The OpenVPN connection will have the same name as whatever you called the `.ovpn` file. In regards to this tutorial, this means that the connection is named `e8b4e806-ac48-4cd5-b7e6-4e714711cc50.ovpn`, aligning with the first client file you generated.
 
-## Linux
+### Linux
 
-### Installing
+#### Installing
 
 If you are using Linux, there are a variety of tools that you can use depending on your distribution. Your desktop environment or window manager might also include connection utilities.
 
@@ -755,7 +755,7 @@ On Ubuntu or Debian, you can install it just as you did on the server by typing:
 $ sudo apt install openvpn
 ```
 
-### Configuring clients that use systemd-resolved
+#### Configuring clients that use systemd-resolved
 
 First determine if your system is using systemd-resolved to handle DNS resolution by checking the `/etc/resolv.conf` file:
 
@@ -803,7 +803,7 @@ Link 22 (tun0)
 
 If you see the IP addresses of the DNS servers that you configured on the **OpenVPN Server**, along with the `~.` setting for DNS Domain in the output, then you have correctly configured your client to use the VPN server’s DNS resolver. You can also check that you are sending DNS queries over the VPN by using a site like DNS Leak.
 
-### Configuring clients that use update-resolv-conf
+#### Configuring clients that use update-resolv-conf
 
 If your system is not using `systemd-resolved` to manage DNS, check to see if your distribution includes an `/etc/openvpn/update-resolv-conf` script instead:
 
@@ -825,7 +825,7 @@ up /etc/openvpn/update-resolv-conf
 down /etc/openvpn/update-resolv-conf
 ```
 
-### Connecting
+#### Connecting
 
 ```bash
 $ sudo openvpn --config e8b4e806-ac48-4cd5-b7e6-4e714711cc50.ovpn
@@ -833,7 +833,7 @@ $ sudo openvpn --config e8b4e806-ac48-4cd5-b7e6-4e714711cc50.ovpn
 
 This should connect you to your VPN Server.
 
-# Step 14 — Testing VPN connection
+## Step 14 — Testing VPN connection
 
 Once everything is installed, a simple check confirms everything is working properly. Without having a VPN connection enabled, open a browser and go to [DNS Leak Test](https://www.dnsleaktest.com/) website.
 
@@ -911,7 +911,7 @@ The client should no longer be able to successfully connect to the server using 
 
 You can use this process to revoke any certificates that you have previously issued for your server.
 
-## References
+# References
 
 - [How To Set Up and Configure an OpenVPN Server on Ubuntu 22.04](https://www.digitalocean.com/community/tutorials/how-to-set-up-and-configure-an-openvpn-server-on-ubuntu-22-04)
 - [OpenVPN Community Resources - 2x HOW TO](https://openvpn.net/community-resources/how-to/)
