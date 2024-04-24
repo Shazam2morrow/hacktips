@@ -10,8 +10,12 @@ Server with **1 CPU**, **1024 MB RAM**, **25 GB free HDD or SDD**, running **Ubu
 
 ### Clients tested
 
-- **Ubuntu 22.04.4** using openvpn version `2.5.9`.
-- **Android 14** using OpenVPN Connect version `3.4.1`. 
+- **Windows 11 Pro 23H2** using OpenVPN version `11.25.0.0`
+- **Ubuntu 22.04.4** using OpenVPN version `2.5.9`
+- **Samsung S22 on Android 14** using OpenVPN Connect version `3.4.1`
+- **iPhone 11 on iOS 17.2.1** using OpenVPN Connect version `3.4.2`
+- **macOS Big Sur 11.7.10** using OpenVPN Connect version `3.4.9`
+- **macOS Big Sur 11.7.10** using Tunnelblick `4.0.1`
 
 ### Hosts
 
@@ -741,6 +745,26 @@ This section covers how to install a client VPN profile on Linux and Android. No
 
 The OpenVPN connection will have the same name as whatever you called the `.ovpn` file. In regards to this tutorial, this means that the connection is named `e8b4e806-ac48-4cd5-b7e6-4e714711cc50.ovpn`, aligning with the first client file you generated.
 
+Bear in mind that some websites can be blocked in your country so you need to install it using other ways like built-in package managers.
+
+### Windows
+
+#### Installing
+
+Download the [OpenVPN client application for Windows](https://openvpn.net/client/client-connect-vpn-for-windows/) from the official website. Choose the appropriate installer version for your version of Windows.
+
+You must run OpenVPN as an administrator each time it’s used, even by administrative accounts. To do this without having to right-click and select Run as administrator every time you use the VPN, you must preset this from an administrative account. This also means that standard users will need to enter the administrator’s password to use OpenVPN. On the other hand, standard users can’t properly connect to the server unless the OpenVPN application on the client has admin rights, so the elevated privileges are necessary.
+
+After installation you need to import the `.ovpn` file and click connect button to connect to your VPN server. The disconnection is done in the opposite way.
+
+### macOS
+
+#### Installing
+
+You can either install [Tunnelblick OpenVPN client](https://openvpn.net/client-connect-vpn-for-mac-os/) or [OpenVPN Connect client](https://openvpn.net/client-connect-vpn-for-mac-os/) to connect to your OpenVPN server using the config file. Double-click the downloaded `.dmg` file and follow the prompts to install.
+
+The connection process is as simple as clicking the associated buttons.
+
 ### Linux
 
 #### Installing
@@ -832,6 +856,34 @@ $ sudo openvpn --config e8b4e806-ac48-4cd5-b7e6-4e714711cc50.ovpn
 ```
 
 This should connect you to your VPN Server.
+
+### iOS
+
+#### Installing
+
+From the iTunes App Store, search for and install **OpenVPN Connect**, the official iOS OpenVPN client application. To transfer your iOS client configuration onto the device, connect it directly to a computer.
+
+The process of completing the transfer with iTunes is outlined here. Open iTunes on the computer and click on **iPhone > apps**. Scroll down to the bottom to the File Sharing section and click the OpenVPN app. The blank window to the right, OpenVPN Documents, is for sharing files. Drag the `.ovpn` file to the OpenVPN Documents window. 
+
+Now launch the OpenVPN app on the iPhone. You will receive a notification that a new profile is ready to import. Tap the green plus sign to import it.
+
+OpenVPN is now ready to use with the new profile. Start the connection by sliding the Connect button to the On position. Disconnect by sliding the same button to **Off**.
+
+### Android
+
+#### Installing
+
+Open the Google Play Store. Search for and install Android OpenVPN Connect, the official [Android OpenVPN](https://play.google.com/store/apps/details?id=net.openvpn.openvpn) client application.
+
+You can transfer the `.ovpn` profile by connecting the Android device to your computer by USB and copying the file over. Alternatively, if you have an SD card reader, you can remove the device’s SD card, copy the profile onto it and then insert the card back into the Android device.
+
+Start the OpenVPN app and tap the `FILE` menu to import the profile.
+
+Then navigate to the location of the saved profile and select your `.ovpn` file. Tap the `IMPORT` button to finish importing this profile.
+
+To connect, tap the toggle button close to the profile you want to use. You will see real time stats of your connection and traffic being routed through your OpenVPN server.
+
+To disconnect, just tap the toggle button on the top left once again. You will be prompted to confirm that you want to disconnect from your VPN.
 
 ## Step 14 — Testing VPN connection
 
