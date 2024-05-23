@@ -48,44 +48,49 @@ There are also a lot of publicly available wordlists that you can use to automat
 
 ### Analyzing error messages
 
-- Study error messages to learn information about the application's internal workings.
-- Look for details such as database table names, file paths, or technology stack information.
+Study error messages to learn information about the application's internal workings.
+
+Look for details such as database table names, file paths, or technology stack information.
 
 ### Reviewing developer comments
 
-- Inspect HTML and source code for comments that might reveal sensitive information.
-- Use developer tools or web security tools to extract these comments.
+Inspect HTML and source code for comments that might reveal sensitive information.
+
+Use developer tools or web security tools to extract these comments.
 
 ### Checking directory listings
 
-- Attempt to access directories without index files to see if the server lists the contents.
-- Review files like `/robots.txt` and `/sitemap.xml` for paths that should not be accessible.
+Attempt to access directories without index files to see if the server lists the contents.
+
+Review files like `/robots.txt` and `/sitemap.xml` for paths that should not be accessible.
 
 ### Exploring debugging data
 
-- Look for custom error messages or logs that might be left in the production environment.
-- Analyze any detailed debug information that could provide insights into application behavior.
+Look for custom error messages or logs that might be left in the production environment.
+
+Analyze any detailed debug information that could provide insights into application behavior.
 
 ### Source code disclosure
 
-- Search for backup files, temporary files, or version control directories that might be accessible.
-- Try requesting source code files using known backup file extensions (e.g., `.bak`, `.old`, `~`).
+Search for backup files, temporary files, or version control directories that might be accessible.
+
+Try requesting source code files using known backup file extensions (e.g., `.bak`, `.old`, `~`).
 
 ### User account pages
 
-- Test whether account pages expose information about other users by manipulating URL parameters or other input fields.
+Test whether account pages expose information about other users by manipulating URL parameters or other input fields.
 
 ### Verbose output in debug mode
 
-- Websites left in debug mode can display detailed stack traces and other diagnostic information that shouldn't be exposed in a production environment.
+Websites left in debug mode can display detailed stack traces and other diagnostic information that shouldn't be exposed in a production environment.
 
 ### Third-party services
 
-- Misconfigured integrations with third-party services can leak sensitive information via API responses or webhook URLs.
+Misconfigured integrations with third-party services can leak sensitive information via API responses or webhook URLs.
 
 ### Unnecessary information in responses
 
-- HTTP responses may include headers or metadata that disclose server versions, framework versions, or other internal details.
+HTTP responses may include headers or metadata that disclose server versions, framework versions, or other internal details.
 
 ## How to prevent information disclosure vulnerabilities?
 
