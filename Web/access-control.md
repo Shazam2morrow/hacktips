@@ -44,7 +44,7 @@ When searching for such vulnerabilities, consider the questions below to guide y
 
 2. **How does the application handle user roles and permissions?**
 
-   Examine how different user roles are defined and what permissions each role has. Look for inconsistencies or overly permissive roles that might lead to privilege escalation.
+   Examine how different user roles are defined and what permissions each role has. Look for inconsistencies or overly permissive roles that might lead to **PE**.
 
 3. **How are user sessions managed?**
 
@@ -60,7 +60,7 @@ When searching for such vulnerabilities, consider the questions below to guide y
 
 6. **What could an attacker gain by escalating privileges?**
 
-   Consider the potential impact of a successful privilege escalation. Determine what sensitive data or critical functions could be compromised.
+   Consider the potential impact of a successful **PE**. Determine what sensitive data or critical functions could be compromised.
 
 ## How to test for AC and PE vulnerabilities?
 
@@ -177,7 +177,7 @@ Imagine that an attacker manually changes the URL to access protected pages (e.g
 
 Imagine that an application exposes function-level APIs without proper **AC** checks. For example, an API endpoint like `yoursite.com/api/deleteUser` can be accessed by any authenticated user without checking their role. It might lead to unauthorized execution of critical functions, leading to data manipulation, account deletions, or service disruption.
 
-There are many more examples of AC vulnerabilities of course but the presented ones are by far the most common I have seen in the wild.
+There are many more examples of **AC** vulnerabilities of course but the presented ones are by far the most common I have seen in the wild.
 
 ## How to prevent AC and PE vulnerabilities?
 
@@ -231,7 +231,7 @@ There are many more examples of AC vulnerabilities of course but the presented o
 
 3. **Parameterized queries**
 
-   Use parameterized queries to prevent SQL injection attacks, which can lead to unauthorized data access and privilege escalation.
+   Use parameterized queries to prevent SQL injection attacks, which can lead to unauthorized data access and **PE**.
 
 4. **Code reviews and security testing**
 
@@ -243,61 +243,76 @@ There are many more examples of AC vulnerabilities of course but the presented o
 
 ## Checklist for verifying AC and PE vulnerabilities
 
-1. **User account segregation**
+Below you can find some basic checks that will allow you to check your application for **AC** and **PE** vulnerabilities.
 
-   - Test the application using different user accounts with varying privilege levels (e.g., admin, regular user, guest).
+For additional tests please refer to the latest version of the [interactive checklist](#interactive-checklist) section of this document.
 
-   - Use a high-privilege account to locate all available functionalities and then attempt to access those using a lower-privileged account.
+### User account segregation
 
-   - Use two different user accounts with the same privilege level to test access to each other's resources.
+- Test the application using different user accounts with varying privilege levels (e.g., admin, regular user, guest).
 
-2. **URL and parameter manipulation**
+- Use a high-privilege account to locate all available functionalities and then attempt to access those using a lower-privileged account.
 
-   - Check if changing URL parameters allows access to unauthorized resources (e.g., `yoursite.com/user?userId=123` to `yoursite.com/user?userId=124`).
+- Use two different user accounts with the same privilege level to test access to each other's resources.
 
-   - Test if resource identifiers (e.g., user IDs, document IDs) are predictable and can be manipulated to gain unauthorized access.
+### URL and parameter manipulation
 
-3. **HTTP method testing**
+- Check if changing URL parameters allows access to unauthorized resources (e.g., `yoursite.com/user?userId=123` to `yoursite.com/user?userId=124`).
 
-   - Identify privileged requests and test whether modifying the HTTP method (e.g., changing POST to GET) affects **AC**.
+- Test if resource identifiers (e.g., user IDs, document IDs) are predictable and can be manipulated to gain unauthorized access.
 
-   - Attempt to use arbitrary invalid HTTP methods to see if the application still processes the request.
+### HTTP method testing
 
-4. **Client-side code analysis**
+- Identify privileged requests and test whether modifying the HTTP method (e.g., changing POST to GET) affects **AC**.
 
-   - Inspect client-side code (HTML, JavaScript) for references to hidden or sensitive functionality.
+- Attempt to use arbitrary invalid HTTP methods to see if the application still processes the request.
 
-   - Check for sensitive data or **AC** information stored in hidden form fields or cookies that can be manipulated.
+### Client-side code analysis
 
-5. **Session management**
+- Inspect client-side code (HTML, JavaScript) for references to hidden or sensitive functionality.
 
-   - Ensure that session tokens are properly managed and cannot be easily predicted or reused by attackers.
+- Check for sensitive data or **AC** information stored in hidden form fields or cookies that can be manipulated.
 
-   - Test for session fixation vulnerabilities by attempting to set or fixate session tokens.
+### Session management
 
-6. **Multistage processes**
+- Ensure that session tokens are properly managed and cannot be easily predicted or reused by attackers.
 
-   - Walk through multistage processes (e.g., checkout flows, account setups) to ensure each stage has proper **AC**.
+- Test for session fixation vulnerabilities by attempting to set or fixate session tokens.
 
-   - Switch session tokens between steps to check if **AC** are consistently enforced throughout the process.
+### Multistage processes
 
-7. **Static resource access**
+- Walk through multistage processes (e.g., checkout flows, account setups) to ensure each stage has proper **AC**.
 
-   - Verify that static resources (e.g., images, documents) are protected and cannot be accessed directly via their URLs without proper authorization.
+- Switch session tokens between steps to check if **AC** are consistently enforced throughout the process.
 
-   - Using different user contexts, attempt to access static resources directly to check if **AC** are applied.
+### Static resource access
 
-8. **Administrative function access**
+- Verify that static resources (e.g., images, documents) are protected and cannot be accessed directly via their URLs without proper authorization.
 
-   - Ensure that administrative pages are not accessible to regular users and require proper authentication and authorization.
+- Using different user contexts, attempt to access static resources directly to check if **AC** are applied.
 
-   - Verify that robust authentication methods (e.g., MFA, IP filtering) are used for sensitive administrative functions.
+### Administrative function access
 
-9. **Authorization checks**
+- Ensure that administrative pages are not accessible to regular users and require proper authentication and authorization.
 
-   - Confirm that authorization checks are implemented consistently across all application functions and endpoints.
+- Verify that robust authentication methods (e.g., MFA, IP filtering) are used for sensitive administrative functions.
 
-   - Ensure that all **AC** decisions are enforced on the server side, not relying on client-side validation.
+### Authorization checks
+
+- Confirm that authorization checks are implemented consistently across all application functions and endpoints.
+
+- Ensure that all **AC** decisions are enforced on the server side, not relying on client-side validation.
+
+
+## Interactive checklist
+
+**Interactive checklist** is a dynamically updated document (like Google Sheet) that stores information about the checks to be made as well as other important information about an issues like its status, severity, comments and etc.
+
+It allows you to be consistent in your tests and make sure that every possible case is covered.
+
+The list can be found [here]((https://docs.google.com/spreadsheets/d/1vR7IDd4mE-0_mSVWdO4gFl_S6jhSpcKgIPz6a7t6Pps/edit?usp=sharing)) and you can fine tune it according to the specification of your project.
+
+Please, refer to this document to stay updated.
 
 ## Labs
 
