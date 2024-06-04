@@ -110,9 +110,7 @@ Most of the time, the operating system will not have any user except one - **roo
 
 ### Nice to meet you, I am root
 
-The **root** user is the administrative user in a Linux environment with elevated privileges. Due to the extensive privileges associated with the **root** account, it is not recommended for regular use. The root account has the capability to make highly destructive changes, even unintentionally.
-
-For this reason, the **root** account is primarily used during the initial server setup. Subsequently, a new account should be created and granted administrative privileges to replace the use of the **root** account in regular operations.
+The **root** user is the administrative user in a Linux environment with elevated privileges. Due to the extensive privileges associated with the **root** account, it is not recommended for regular use. The root account has the capability to make highly destructive changes, even unintentionally. For this reason, the **root** account is primarily used during the initial server setup. Subsequently, a new account should be created and granted administrative privileges to replace the use of the **root** account in regular operations.
 
 ## Step 4 - Creating a new user
 
