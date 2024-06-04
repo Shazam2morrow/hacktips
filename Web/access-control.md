@@ -310,7 +310,7 @@ For additional tests please refer to the latest version of the [interactive chec
 
 It allows you to be consistent in your tests and make sure that every possible case is covered.
 
-The list can be found [here]((https://docs.google.com/spreadsheets/d/1vR7IDd4mE-0_mSVWdO4gFl_S6jhSpcKgIPz6a7t6Pps/edit?usp=sharing)) and you can fine tune it according to the specification of your project.
+The list can be found [here](https://docs.google.com/spreadsheets/d/1vR7IDd4mE-0_mSVWdO4gFl_S6jhSpcKgIPz6a7t6Pps/edit?usp=sharing) and you can fine tune it according to the specification of your project.
 
 Please, refer to this document to stay updated.
 
