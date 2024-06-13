@@ -2,23 +2,182 @@
 
 ## What are file upload vulnerabilities?
 
-ToDo
+File upload vulnerabilities are security weaknesses that arise when a web server permits users to upload files without adequately validating their name, type, contents, or size. This lack of proper validation can lead to various security issues, such as allowing the upload of arbitrary and potentially dangerous files. These files could include server-side script files that enable remote code execution. In some instances, the mere act of uploading the file can cause harm, while other attacks might require a follow-up HTTP request to trigger the file's execution by the server.
 
 ## How do file upload vulnerabilities arise?
 
-ToDo
+File upload vulnerabilities arise from insufficient validation and insecure handling of uploaded files. This includes not adequately checking the file type, name, size, and contents. Additionally, insecure server configurations and lack of restrictions on uploaded files can enable attackers to upload and execute malicious files, leading to remote code execution or other security breaches.
 
 ## What is the impact of file upload vulnerabilities?
 
-ToDo
+File upload vulnerabilities can lead to remote code execution, data overwriting, denial-of-service attacks, and unauthorized access. These vulnerabilities enable attackers to control servers, disrupt services, and manipulate data.
 
-## What things to consider while searching for file upload vulnerabilities?
+## How to test for file upload vulnerabilities?
 
-ToDo (add info about tips from PortSwigger)
+### Unrestricted file uploads
 
-## Checklist for verifying AC and PE vulnerabilities
+Verify if the application allows unrestricted file uploads that can execute server-side scripts (e.g., PHP, Python). Test by attempting to upload a script and executing it to check for web shell deployment.
 
-ToDo
+A web shell is a malicious script that enables an attacker to execute arbitrary commands on a remote web server simply by sending HTTP requests to the right endpoint.
+
+For example, the following PHP one-liner could be used to read arbitrary files from the server's filesystem:
+
+```php
+    <?php echo file_get_contents('/path/to/target/file'); ?>
+```
+
+A more versatile web shell may look something like this:
+
+```php
+    <?php echo system($_GET['command']); ?>
+```
+
+This script accepts an arbitrary system command via a query parameter as shown below:
+
+```http
+    GET /exploit.php?command=id HTTP/1.1
+```
+
+### Flawed file type validation
+
+Test file type validation by uploading files with incorrect MIME types using tools like Burp Repeater. Ensure the server validates file contents and not just headers.
+
+### Prevent file execution
+
+Check if the server executes uploaded files. Upload different file types to user-accessible directories and attempt to execute them. Verify the server’s response.
+
+### Insufficient blacklisting
+
+Test for blacklisting of dangerous file types. Upload files with alternative extensions (`.php5`, `.shtml`) or obfuscated names (`exploit.pHp`, `exploit.php.jpg`). Verify if the server still executes these files.
+
+### Overriding server configuration
+
+Attempt to upload server configuration files (`.htaccess` for Apache, `web.config` for IIS) to override or add to global settings. Verify if you can map custom extensions to executable MIME types.
+
+For example, here is an example of an `.htaccess` configuration file that processes files with `.jpeg` or `.jpg` extensions using the PHP interpreter:
+
+```.htaccess
+    <FilesMatch "\.(jpeg|jpg)$">
+        SetHandler application/x-httpd-php
+    </FilesMatch>
+```
+
+This configuration uses the `FilesMatch` directive to match files with the `.jpeg` or `.jpg` extensions and sets the handler to `application/x-httpd-php`, which tells the server to process these files with the PHP interpreter.
+
+Or you can even provide the following Apache directive:
+
+```.htaccess
+    AddType application/x-httpd-php .l33t
+```
+
+This maps an arbitrary extension (`.l33t`) to the executable MIME type `application/x-httpd-php`. If the server uses the `mod_php` module, it knows how to handle this already.
+
+### Obfuscating file extensions
+
+Use obfuscation techniques like multiple extensions (exploit.php.jpg), URL encoding, trailing characters, and multibyte Unicode characters to bypass blacklists. Verify if the server executes these files.
+
+### Flawed content validation
+
+Validate file contents instead of headers. Upload files with inconsistent headers and contents (e.g., a PHP script with a `.jpg` header). Verify if the server rejects these files.
+
+Certain file types may always contain a specific sequence of bytes in their header or footer. These can be used like a fingerprint or signature to determine whether the contents match the expected type. For example, JPEG files always begin with the bytes `FF D8 FF`.
+
+This is a much more robust way of validating the file type, but even this is not foolproof. Using special tools, such as ExifTool, it can be trivial to create a polyglot JPEG file containing malicious code within its metadata.
+
+Here is an example of how you can create a polyglot PHP/JPG file that is fundamentally a normal image, but contains PHP payload in its metadata. A simple way of doing this is to download and run ExifTool from the command line as follows:
+
+```bash
+    exiftool -Comment="<?php echo 'START '.file_get_contents('/etc/password').' END'; ?>" <YOUR-INPUT-IMAGE>.jpg -o polyglot.php
+```
+
+This adds custom PHP payload to the image's `Comment` field, then saves the image with a `.php` extension. 'START' and 'END' are needed to find out the content boundaries.
+
+### Race condition exploits
+
+Check for race conditions during file upload processing. Upload files quickly before validation is complete to see if execution is possible. Verify server response and timing.
+
+Usually it is very hard to identify such vulnerabilities without access to the application source code but even without one this attack can be automated, for example, using [Turbo Intruder](https://github.com/portswigger/turbo-intruder) which is a Burp Suite extension for sending large numbers of HTTP requests and analyzing the results.
+
+For example, the following script template can be used to send multiple requests to the server very quickly:
+
+```python
+def queueRequests(target, wordlists):
+    engine = RequestEngine(endpoint=target.endpoint, concurrentConnections=10,)
+
+    request1 = '''<YOUR-POST-REQUEST>'''
+
+    request2 = '''<YOUR-GET-REQUEST>'''
+
+    # the 'gate' argument blocks the final byte of each request until openGate is invoked
+    engine.queue(request1, gate='race1')
+    for x in range(5):
+        engine.queue(request2, gate='race1')
+
+    # wait until every 'race1' tagged request is ready
+    # then send the final byte of each request
+    # (this method is non-blocking, just like queue)
+    engine.openGate('race1')
+
+    engine.complete(timeout=60)
+
+
+def handleResponse(req, interesting):
+    table.add(req)
+```
+
+If you choose to build the `GET` request manually, make sure you terminate it properly with a `\r\n\r\n` sequence. Also remember that Python will preserve any whitespace within a multiline string, so you need to adjust your indentation accordingly to ensure that a valid request is sent.
+
+### URL-based upload race conditions
+
+Test URL-based file uploads for race conditions. Brute-force temporary directory names if pseudo-random functions are used. Extend processing time by uploading large files.
+
+### Client-side script uploads
+
+Upload files with client-side scripts (e.g., HTML with `<script>` tags or SVG with embedded scripts). Verify if these scripts are executed in the user’s browser, leading to stored XSS vulnerabilities.
+
+### Vulnerabilities in file parsing
+
+Test for vulnerabilities in file parsing. Upload specially crafted files (e.g., XML-based .doc or .xls files) to check for XXE injection or other parsing vulnerabilities.
+
+### PUT method uploads
+
+Verify if the server supports PUT requests for file uploads. Use PUT to upload malicious files directly to the server and check for execution.
+
+### Archive content validation
+
+Test if the application validates the contents of uploaded archives. Upload archives containing malicious files and verify if they are evaluated or executed.
+
+### Path traversal vulnerability
+
+Check for path traversal vulnerabilities by including traversal characters (`../`) in the uploaded file name. Verify if the application allows accessing files outside the intended directory.
+
+### Large file uploads
+
+Test if the application rejects overly large files to prevent denial of service attacks. Upload large files and observe the server’s response.
+
+### Correct content type header
+
+Verify that the application sets the `Content-Type` header according to the actual file extension, not the `Content-Type` specified during upload. Download previously uploaded files and check headers.
+
+### SVG file uploads
+
+Test if the application allows SVG file uploads with embedded scripts. Verify if the uploaded SVG is rendered in the browser, potentially leading to XSS vulnerabilities.
+
+This checklist provides a comprehensive guide to identifying and testing various file upload vulnerabilities in web applications. Each step is designed to uncover potential security risks associated with file uploads.
+
+## Some tips regarding file upload vulnerabilities
+
+### Check content type in the server's response
+
+The `Content-Type` response header may provide clues as to what kind of file the server thinks it has served. If this header hasn't been explicitly set by the application code, it normally contains the result of the file extension/MIME type mapping.
+
+### Thoroughly check form fields
+
+Web servers often use the `filename` field in `multipart/form-data` requests to determine the name and location where the file should be saved.
+
+### Check if the server accepts other HTTP verbs
+
+You can try sending `OPTIONS` requests to different endpoints to test for any that advertise support for the `PUT` method.
 
 ## How to prevent file upload vulnerabilities?
 
