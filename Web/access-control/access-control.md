@@ -84,10 +84,10 @@ When performing black-box testing, you should consider the following key aspects
     - Manipulate identified parameters to check if they are used for **AC** decisions.
     - Test parameter manipulation for each privilege level and across different pages to confirm if they are vulnerable.
 
-4. **Using automation tools**
+4. **Using automation tools and extensions**
 
-    - Utilize tools and extensions like the **Authorize** extension in **Burp Suite** to automate a portion of the **AC** testing.
-    - The **Authorize** extension can make requests from different user perspectives (unauthenticated, low-privileged user, high-privileged user) and compare responses to identify **AC** vulnerabilities.
+    - Utilize tools and extensions (like [Authorize](https://github.com/portswigger/autorize), [AuthMatrix](https://github.com/portswigger/auth-matrix), [Auth](https://github.com/portswigger/authz)) for **Burp Suite** to automate a portion of the **AC** testing. Such extensions can make requests from different user perspectives (unauthenticated, low-privileged user, high-privileged user) and compare responses to identify **AC** vulnerabilities.
+    - [Firefox Multi-Account Containers](https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/) is Firefox extension that allows to keep the browser's tabs in separate independent containers. This feature allows you to create a container per each test user and view the differences on the UI.
 
 5. **Comparing responses**
 
@@ -145,7 +145,7 @@ Each of these examples below highlights how broken **AC** can lead to severe sec
 
 For example, if a web application uses predictable identifiers in URLs (e.g., `example.com/user?userId=123`) then an attacker might change the `userId` parameter to access other users' data. In this case the impact is unauthorized access to sensitive information, such as personal data, financial records, or private messages.
 
-**IDOR** can be of two types: **state-changing (write)** and **non-state-changing (read)**. 
+**IDOR** can be of two types: **state-changing (write)** and **non-state-changing (read)**.
 
 In terms of **state-changing IDOR** (like password reset, password change, account recovery) often have the highest business impact. Say, as compared to a “change email subscription settings” **IDOR**.
 
@@ -153,11 +153,11 @@ As for **non-state-changing IDOR**, look for functionalities that handle the sen
 
 Examples of **IDOR** vulnerabilities include:
 
-- **User data**: Imagine an e-commerce website where users can view their orders by providing an order number. If the website uses sequential order numbers and the order data is not properly protected, an attacker could simply change the order number in the URL to access another user's order data. 
+- **User data**: Imagine an e-commerce website where users can view their orders by providing an order number. If the website uses sequential order numbers and the order data is not properly protected, an attacker could simply change the order number in the URL to access another user's order data.
 
-- **Private files**: A file-sharing application that allows users to share files with each other may have a vulnerability if the URLs of the files are directly accessible. If an attacker can guess or manipulate the URLs, they can access files that are not intended for them. 
+- **Private files**: A file-sharing application that allows users to share files with each other may have a vulnerability if the URLs of the files are directly accessible. If an attacker can guess or manipulate the URLs, they can access files that are not intended for them.
 
-- **Restricted pages**: A web application may have pages that are restricted to certain user roles or permissions. If the application uses predictable parameters to control access, an attacker could simply change the parameter in the URL to access the restricted page. 
+- **Restricted pages**: A web application may have pages that are restricted to certain user roles or permissions. If the application uses predictable parameters to control access, an attacker could simply change the parameter in the URL to access the restricted page.
 
 - **API calls**: APIs can also be vulnerable to IDOR attacks if they allow direct object references. For example, if an API call retrieves a user's data based on a user ID, an attacker could simply modify the user ID in the API call to access another user's data.
 
@@ -319,7 +319,6 @@ For additional tests please refer to the latest version of the [interactive chec
 
 - Ensure that all **AC** decisions are enforced on the server side, not relying on client-side validation.
 
-
 ## Interactive checklist
 
 **Interactive checklist** is a dynamically updated document (like Google Sheet) that stores information about the checks to be made as well as other important information about an issues like its status, severity, comments and etc.
@@ -343,6 +342,6 @@ Please, refer to this document to stay updated.
 ## References
 
 - [Access Control - PortSwigger](https://portswigger.net/web-security/access-control)
-- [Intro to IDOR - Medium](https://vickieli.medium.com/intro-to-idor-9048453a3e5d) 
-- [How to find more IDORs - Medium](https://vickieli.medium.com/how-to-find-more-idors-ae2db67c9489) 
-- [IDOR - Hacktricks](https://book.hacktricks.xyz/pentesting-web/idor#8d15) 
+- [Intro to IDOR - Medium](https://vickieli.medium.com/intro-to-idor-9048453a3e5d)
+- [How to find more IDORs - Medium](https://vickieli.medium.com/how-to-find-more-idors-ae2db67c9489)
+- [IDOR - Hacktricks](https://book.hacktricks.xyz/pentesting-web/idor#8d15)
