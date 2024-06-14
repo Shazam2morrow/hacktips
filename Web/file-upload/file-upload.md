@@ -1,4 +1,4 @@
-# File Upload
+# File Upload Vulnerabilities
 
 ## What are file upload vulnerabilities?
 
@@ -14,6 +14,8 @@ File upload vulnerabilities can lead to remote code execution, data overwriting,
 
 ## How to test for file upload vulnerabilities?
 
+This checklist provides a comprehensive guide to identifying and testing various file upload vulnerabilities in applications. Each step is designed to uncover potential security risks associated with file uploads.
+
 ### Unrestricted file uploads
 
 Verify if the application allows unrestricted file uploads that can execute server-side scripts (e.g., PHP, Python). Test by attempting to upload a script and executing it to check for web shell deployment.
@@ -23,26 +25,26 @@ A web shell is a malicious script that enables an attacker to execute arbitrary 
 For example, the following PHP one-liner could be used to read arbitrary files from the server's filesystem:
 
 ```php
-    <?php echo file_get_contents('/path/to/target/file'); ?>
+<?php echo file_get_contents('/path/to/target/file'); ?>
 ```
 
 A more versatile web shell may look something like this:
 
 ```php
-    <?php echo system($_GET['command']); ?>
+<?php echo system($_GET['command']); ?>
 ```
 
 This script accepts an arbitrary system command via a query parameter as shown below:
 
 ```http
-    GET /exploit.php?command=id HTTP/1.1
+GET /exploit.php?command=id HTTP/1.1
 ```
 
 ### Flawed file type validation
 
-Test file type validation by uploading files with incorrect MIME types using tools like Burp Repeater. Ensure the server validates file contents and not just headers.
+Test file type validation by uploading files with incorrect MIME types using tools like Burp Repeater. Ensure the server validates file contents and not just headers. The `Content-Type` response header may provide clues as to what kind of file the server thinks it has served. If this header hasn't been explicitly set by the application code, it normally contains the result of the file extension/MIME type mapping.
 
-### Prevent file execution
+### File execution
 
 Check if the server executes uploaded files. Upload different file types to user-accessible directories and attempt to execute them. Verify the server’s response.
 
@@ -56,25 +58,33 @@ Attempt to upload server configuration files (`.htaccess` for Apache, `web.confi
 
 For example, here is an example of an `.htaccess` configuration file that processes files with `.jpeg` or `.jpg` extensions using the PHP interpreter:
 
-```.htaccess
-    <FilesMatch "\.(jpeg|jpg)$">
-        SetHandler application/x-httpd-php
-    </FilesMatch>
+```config
+<FilesMatch "\.(jpeg|jpg)$">
+    SetHandler application/x-httpd-php
+</FilesMatch>
 ```
 
 This configuration uses the `FilesMatch` directive to match files with the `.jpeg` or `.jpg` extensions and sets the handler to `application/x-httpd-php`, which tells the server to process these files with the PHP interpreter.
 
-Or you can even provide the following Apache directive:
+Or you can even provide the following Apache directive that maps an arbitrary extension (`.l33t`) to the executable MIME type `application/x-httpd-php` and if the server uses the `mod_php` module, it knows how to handle this already:
 
 ```.htaccess
-    AddType application/x-httpd-php .l33t
+AddType application/x-httpd-php .l33t
 ```
-
-This maps an arbitrary extension (`.l33t`) to the executable MIME type `application/x-httpd-php`. If the server uses the `mod_php` module, it knows how to handle this already.
 
 ### Obfuscating file extensions
 
-Use obfuscation techniques like multiple extensions (exploit.php.jpg), URL encoding, trailing characters, and multibyte Unicode characters to bypass blacklists. Verify if the server executes these files.
+Use obfuscation techniques like multiple extensions (exploit.php.jpg), URL encoding, trailing characters, and multibyte Unicode characters to bypass blacklists:
+
+- Provide multiple extensions. Depending on the algorithm used to parse the filename, the following file may be interpreted as either a PHP file or JPG image: `exploit.php.jpg`.
+
+- Add trailing characters. Some components will strip or ignore trailing whitespaces, dots, and suchlike: `exploit.php`.
+
+- Try using the URL encoding (or double URL encoding) for dots, forward slashes, and backward slashes. If the value isn't decoded when validating the file extension, but is later decoded server-side, this can also allow you to upload malicious files that would otherwise be blocked: `exploit%2Ephp`.
+
+- Add semicolons or URL-encoded null byte characters before the file extension. If validation is written in a high-level language like PHP or Java, but the server processes the file using lower-level functions in C/C++, for example, this can cause discrepancies in what is treated as the end of the filename: `exploit.asp;.jpg` or `exploit.asp%00.jpg`.
+
+- Try using multibyte unicode characters, which may be converted to null bytes and dots after unicode conversion or normalization. Sequences like `xC0 x2E, xC4 xAE or xC0 xAE` may be translated to `x2E` if the filename parsed as a UTF-8 string, but then converted to ASCII characters before being used in a path.
 
 ### Flawed content validation
 
@@ -87,10 +97,10 @@ This is a much more robust way of validating the file type, but even this is not
 Here is an example of how you can create a polyglot PHP/JPG file that is fundamentally a normal image, but contains PHP payload in its metadata. A simple way of doing this is to download and run ExifTool from the command line as follows:
 
 ```bash
-    exiftool -Comment="<?php echo 'START '.file_get_contents('/etc/password').' END'; ?>" <YOUR-INPUT-IMAGE>.jpg -o polyglot.php
+exiftool -Comment="<?php echo 'START '.file_get_contents('/etc/password').' END'; ?>" <YOUR-INPUT-IMAGE>.jpg -o polyglot.php
 ```
 
-This adds custom PHP payload to the image's `Comment` field, then saves the image with a `.php` extension. 'START' and 'END' are needed to find out the content boundaries.
+This adds custom PHP payload to the image's `Comment` field, then saves the image with a `.php` extension. `START` and `END` are needed to find out the content boundaries.
 
 ### Race condition exploits
 
@@ -104,9 +114,9 @@ For example, the following script template can be used to send multiple requests
 def queueRequests(target, wordlists):
     engine = RequestEngine(endpoint=target.endpoint, concurrentConnections=10,)
 
-    request1 = '''<YOUR-POST-REQUEST>'''
+    request1 = '''<YOUR-FIRST-REQUEST>'''
 
-    request2 = '''<YOUR-GET-REQUEST>'''
+    request2 = '''<YOUR-SECOND-REQUEST>'''
 
     # the 'gate' argument blocks the final byte of each request until openGate is invoked
     engine.queue(request1, gate='race1')
@@ -141,7 +151,7 @@ Test for vulnerabilities in file parsing. Upload specially crafted files (e.g., 
 
 ### PUT method uploads
 
-Verify if the server supports PUT requests for file uploads. Use PUT to upload malicious files directly to the server and check for execution.
+Verify if the server supports `PUT` requests for file uploads. Use `PUT` to upload malicious files directly to the server and check for execution. You can try sending `OPTIONS` requests to different endpoints to test for any that advertise support for the `PUT` method.
 
 ### Archive content validation
 
@@ -149,35 +159,11 @@ Test if the application validates the contents of uploaded archives. Upload arch
 
 ### Path traversal vulnerability
 
-Check for path traversal vulnerabilities by including traversal characters (`../`) in the uploaded file name. Verify if the application allows accessing files outside the intended directory.
+Check for path traversal vulnerabilities by including traversal characters (`../`) in the uploaded file name. Verify if the application allows accessing files outside the intended directory. Web servers often use the `filename` field in `multipart/form-data` requests to determine the name and location where the file should be saved.
 
 ### Large file uploads
 
 Test if the application rejects overly large files to prevent denial of service attacks. Upload large files and observe the server’s response.
-
-### Correct content type header
-
-Verify that the application sets the `Content-Type` header according to the actual file extension, not the `Content-Type` specified during upload. Download previously uploaded files and check headers.
-
-### SVG file uploads
-
-Test if the application allows SVG file uploads with embedded scripts. Verify if the uploaded SVG is rendered in the browser, potentially leading to XSS vulnerabilities.
-
-This checklist provides a comprehensive guide to identifying and testing various file upload vulnerabilities in web applications. Each step is designed to uncover potential security risks associated with file uploads.
-
-## Some tips regarding file upload vulnerabilities
-
-### Check content type in the server's response
-
-The `Content-Type` response header may provide clues as to what kind of file the server thinks it has served. If this header hasn't been explicitly set by the application code, it normally contains the result of the file extension/MIME type mapping.
-
-### Thoroughly check form fields
-
-Web servers often use the `filename` field in `multipart/form-data` requests to determine the name and location where the file should be saved.
-
-### Check if the server accepts other HTTP verbs
-
-You can try sending `OPTIONS` requests to different endpoints to test for any that advertise support for the `PUT` method.
 
 ## How to prevent file upload vulnerabilities?
 
@@ -279,13 +265,7 @@ Prevent content spoofing and other attacks by ensuring that files are interprete
 
 ## Interactive checklist
 
-**Interactive checklist** is a dynamically updated document (like Google Sheet) that stores information about the checks to be made as well as other important information about an issues like its status, severity, comments and etc.
-
-It allows you to be consistent in your tests and make sure that every possible case is covered.
-
-The list can be found [here](https://docs.google.com/spreadsheets/d/1vR7IDd4mE-0_mSVWdO4gFl_S6jhSpcKgIPz6a7t6Pps/edit?usp=sharing) and you can fine tune it according to the specification of your project.
-
-Please, refer to this document to stay updated.
+- [Google Table - File Upload](https://docs.google.com/spreadsheets/d/1vR7IDd4mE-0_mSVWdO4gFl_S6jhSpcKgIPz6a7t6Pps/edit?usp=sharing)
 
 ## Labs
 
