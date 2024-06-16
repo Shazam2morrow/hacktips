@@ -14,7 +14,7 @@ File upload vulnerabilities can lead to remote code execution, data overwriting,
 
 ## How to test for file upload vulnerabilities?
 
-This checklist provides a comprehensive guide to identifying and testing various file upload vulnerabilities in applications. Each step is designed to uncover potential security risks associated with file uploads.
+These tests provide a comprehensive guide to identifying and testing various file upload vulnerabilities in applications. Each test is designed to uncover potential security risks associated with file uploads.
 
 ### Unrestricted file uploads
 
@@ -92,9 +92,9 @@ Validate file contents instead of headers. Upload files with inconsistent header
 
 Certain file types may always contain a specific sequence of bytes in their header or footer. These can be used like a fingerprint or signature to determine whether the contents match the expected type. For example, JPEG files always begin with the bytes `FF D8 FF`.
 
-This is a much more robust way of validating the file type, but even this is not foolproof. Using special tools, such as ExifTool, it can be trivial to create a polyglot JPEG file containing malicious code within its metadata.
+This is a much more robust way of validating the file type, but even this is not foolproof. Using special tools, such as [ExifTool](https://exiftool.org/), it can be trivial to create a polyglot JPEG file containing malicious code within its metadata.
 
-Here is an example of how you can create a polyglot PHP/JPG file that is fundamentally a normal image, but contains PHP payload in its metadata. A simple way of doing this is to download and run ExifTool from the command line as follows:
+Here is an example of how you can create a polyglot PHP/JPG file that is fundamentally a normal image, but contains PHP payload in its metadata. A simple way of doing this is to download and run `exiftool` from the command line as follows:
 
 ```bash
 exiftool -Comment="<?php echo 'START '.file_get_contents('/etc/password').' END'; ?>" <YOUR-INPUT-IMAGE>.jpg -o polyglot.php
@@ -265,7 +265,7 @@ Prevent content spoofing and other attacks by ensuring that files are interprete
 
 ## Interactive checklist
 
-- [Google Table - File Upload](https://docs.google.com/spreadsheets/d/1vR7IDd4mE-0_mSVWdO4gFl_S6jhSpcKgIPz6a7t6Pps/edit?usp=sharing)
+- [Google Table - File Upload](https://docs.google.com/spreadsheets/d/1vR7IDd4mE-0_mSVWdO4gFl_S6jhSpcKgIPz6a7t6Pps/edit?gid=905183500#gid=905183500)
 
 ## Labs
 
