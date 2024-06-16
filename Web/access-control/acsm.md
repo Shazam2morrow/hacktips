@@ -1,5 +1,25 @@
 # Access Control Security Models (ACSM)
 
+## What is access control?
+
+**Access control (AC)** is a fundamental security mechanism that regulates **who or what can view or use resources** in a computing environment. It involves processes and policies to ensure that only authorized individuals or systems have access to specific data, applications, systems, or physical locations.
+
+## What are the components of AC?
+
+**AC** consists of three primary components:
+
+1. **Authentication**
+
+   Verifying the identity of a user or system. It identifies the user and confirms that they say who they say they are. This often involves credentials such as usernames and passwords, biometric data, or security tokens.
+
+2. **Authorization**
+
+   Determining whether a user or system has permission to access a resource or perform an action. This is typically based on predefined access policies or rules.
+
+3. **Accountability**
+
+   Tracking and logging access to resources to ensure that activities can be audited and traced back to the responsible party. This helps in identifying security breaches and maintaining compliance with regulatory requirements.
+
 ## What is ACSM?
 
 **ACSM** define how access rights are assigned and enforced within a system.
