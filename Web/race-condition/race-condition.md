@@ -1,58 +1,38 @@
 # Race Conditions
 
-maybe things like transferring or withdrawing more funds than your account is supposed to have perhaps applying a single use discount code multiple times or bypassing a rate limit on a login form or such like one of my favorites that I found is I noticed that you can reuse a valid recapture solution
-
-have something in common they could all be classed as limit overrun vulnerabilities they're all about doing
-
-when changing email address sometimes Facebook would send two codes for two different addresses in a single confirmation email
-
-Single-packet attack allows you make 20 to 30 requests arrive at the target server simultaneously completely regardless of network jitter.
-
-Last-byte sync attack was invented before the single-packet attack and exploits the fact that the web server won't start to process a request until the whole request has arrived so by withholding the final bite and putting that in a separate packet you make the final packet of each request really small and kind of make things a little bit more reliable.
-
-But with HTTP/2 you can stuff two entire requests into a single TCP packet and they were.
-
-Nagel's algorithm.
-
-The single-packet attack makes remote races local.
-
-Web servers often delay requests that are sent too quickly and that means that you can send a single packet with a whole load of dummy requests in the middle of it which will cause a server side delay and mean that when your fast processing request at the end is reached it lines everything up perfectly so because with this everything is reaching the server at the same time and the server is injecting the delay for us network jitter is no longer going to make our attack fail.
-
 ## What are race condition vulnerabilities?
 
-Race conditions are a common type of vulnerability related to business logic flaws. They happen when a system or application handles multiple requests at the same time without proper safeguards. This allows different threads to interact with the same data simultaneously, causing unintended behavior.
-
-A race condition attack exploits this by sending carefully timed requests to create collisions and take advantage of the resulting unpredictable behavior for malicious purposes.
+Race conditions are a common type of vulnerability related to business logic flaws. They happen when a system or application handles multiple requests at the same time without proper safeguards. This allows different threads to interact with the same data simultaneously, causing unintended behavior. A race condition attack exploits this by sending carefully timed requests to create collisions and take advantage of the resulting unpredictable behavior for malicious purposes.
 
 ## How do race condition vulnerabilities arise?
 
 Race condition vulnerabilities arise when a system or application processes multiple threads or requests concurrently without proper synchronization. These vulnerabilities can be exploited by attackers who craft and time their requests to trigger the race condition, leading to unintended and often harmful behavior in the system:
 
-1. **Shared Resource Access**: When multiple threads or processes access shared resources (e.g., files, variables, or memory) simultaneously without proper locking mechanisms, it can cause inconsistent or corrupted data states.
+1. **Shared resource access**: when multiple threads or processes access shared resources (e.g., files, variables, or memory) simultaneously without proper locking mechanisms, it can cause inconsistent or corrupted data states.
 
-2. **Time of Check to Time of Use (TOCTOU)**: This occurs when there is a gap between checking a condition (e.g., verifying user permissions) and using the result of that check (e.g., performing an action based on those permissions). An attacker can exploit this gap to change the conditions and bypass security checks.
+2. **Time of check to time of use (TOCTOU)**: this occurs when there is a gap between checking a condition (e.g., verifying user permissions) and using the result of that check (e.g., performing an action based on those permissions). An attacker can exploit this gap to change the conditions and bypass security checks.
 
-3. **Inadequate Locking Mechanisms**: When the system does not implement adequate locking or synchronization mechanisms, it can lead to multiple threads modifying the same data concurrently, causing data corruption or unintended behavior.
+3. **Inadequate locking mechanisms**: when the system does not implement adequate locking or synchronization mechanisms, it can lead to multiple threads modifying the same data concurrently, causing data corruption or unintended behavior.
 
-4. **Poorly Designed Code**: Race conditions often arise from poorly designed code where the developer did not anticipate concurrent execution or failed to implement proper synchronization mechanisms.
+4. **Poorly designed code**: race conditions often arise from poorly designed code where the developer did not anticipate concurrent execution or failed to implement proper synchronization mechanisms.
 
 ## What is the impact of race condition vulnerabilities?
 
-The impact of race condition vulnerabilities can be significant and varied, depending on the context in which they occur. Here are some potential impacts:
+The impact of race condition vulnerabilities can be significant and varied, depending on the context in which they occur:
 
-1. **Data Corruption**: concurrent access to shared resources without proper synchronization can lead to data inconsistencies or corruption, affecting the integrity of the system.
+1. **Data corruption**: concurrent access to shared resources without proper synchronization can lead to data inconsistencies or corruption, affecting the integrity of the system.
 
-2. **Security Bypasses**: attackers can exploit race conditions to bypass security mechanisms, such as authentication and authorization checks, leading to unauthorized access to sensitive data or system functionalities. For example, bypassing an anti-bruteforce rate-limit or reusing a single CAPTCHA solution multiples times.
+2. **Security bypasses**: attackers can exploit race conditions to bypass security mechanisms, such as authentication and authorization checks, leading to unauthorized access to sensitive data or system functionalities. For example, bypassing an anti-bruteforce rate-limit or reusing a single CAPTCHA solution multiples times.
 
-3. **Business Logic Bypasses**: exploiting race conditions can allow attackers to bypass some business logic like redeeming a gift card multiple times, repeatedly applying a single discount code or rating a product multiple times.
+3. **Business logic violations**: exploiting race conditions can allow attackers to violate business logic like redeeming a gift card multiple times, repeatedly applying a single discount code or rating a product multiple times.
 
-4. **Denial of Service (DoS)**: race conditions can cause systems to behave unpredictably or crash, leading to denial of service, where legitimate users are unable to access the system or service.
+4. **Denial of service**: race conditions can cause systems to behave unpredictably or crash, leading to denial of service, where legitimate users are unable to access the system or service.
 
-5. **Financial Loss**: in applications handling financial transactions, race conditions can result in incorrect transactions, duplicate charges, or unauthorized fund transfers, leading to financial losses for users and organizations. For example, withdrawing or transferring cash in excess of your account balance.
+5. **Financial loss**: in applications handling financial transactions, race conditions can result in incorrect transactions, duplicate charges, or unauthorized fund transfers, leading to financial losses for users and organizations. For example, withdrawing or transferring cash in excess of your account balance.
 
-6. **Privilege Escalation**: exploiting race conditions can allow attackers to escalate their privileges, gaining higher-level access and control over the system than intended.
+6. **Privilege escalation**: exploiting race conditions can allow attackers to escalate their privileges, gaining higher-level access and control over the system than intended.
 
-7. **Code Execution**: in some cases, race conditions can be exploited to execute arbitrary code, potentially allowing attackers to take full control of the affected system.
+7. **Code execution**: in some cases, race conditions can be exploited to execute arbitrary code, potentially allowing attackers to take full control of the affected system.
 
 ## How to test for race condition vulnerabilities?
 
@@ -60,7 +40,7 @@ The primary challenge when testing for race conditions is timing the requests so
 
 Even if you send all of the requests at exactly the same time, in practice there are various uncontrollable and unpredictable external factors that affect when the server processes each request and in which order.
 
-### Factors that affect the exploitation of race condition vulnerabilities
+### What factors do affect the exploitation of race condition vulnerabilities?
 
 The image below illustrates how two parallel requests sent at the same time experience different stages of latency:
 
@@ -70,7 +50,7 @@ The critical area, marked as the "race window," shows where the timing overlap o
 
 #### Network latency
 
-Network latency refers to the time it takes for data to travel from its source to its destination across a network. It's usually measured in milliseconds (ms). Imagine you're sending a message to a friend in another country via a messenger. Network latency is the time from when you press "send" on your phone until your friend's phone receives the message. If the network latency is high, there might be a noticeable delay before your friend sees the message.
+Network latency refers to the time it takes for data to travel from its source to its destination across a network. It's usually measured in milliseconds. Imagine you're sending a message to a friend in another country via a messenger. Network latency is the time from when you press "send" on your phone until your friend's phone receives the message. If the network latency is high, there might be a noticeable delay before your friend sees the message.
 
 #### Jitter
 
@@ -84,11 +64,21 @@ Internal latency refers specifically to delays within a network system or device
 
 The period of time during which a collision is possible is known as the "race window". This could be the fraction of a second between two interactions with the database, for example.
 
+#### Delays introduced by network architecture
+
+For example, there may be a delay whenever the front-end server establishes a new connection to the back-end. The protocol used can also have a major impact.
+
+#### Delays introduced by endpoint-specific processing
+
+Different endpoints inherently vary in their processing times, sometimes significantly so, depending on what operations they trigger.
+
 ### How to overcome the factors that affect the exploitation of race condition vulnerabilities?
 
 Basically, there are two ways to overcome network latencies: **last-byte synchronization** and **single-packet attack**.
 
-#### Last-byte synchronization
+#### Last-byte synchronization attack
+
+Last-byte synchronization attack was invented before the single-packet attack and exploits the fact that the web server won't start to process a request until the whole request has arrived so by withholding the final bite and putting that in a separate packet you make the final packet of each request really small and kind of make things a little bit more reliable.
 
 Last-byte synchronization is a technique used to test for race condition vulnerabilities by ensuring that multiple threads or requests reach the critical point of their execution simultaneously. This is done by **synchronizing the sending of the last byte of each request so that they are processed at the same time**.
 
@@ -100,7 +90,33 @@ The single-packet attack enables you to completely neutralize interference from 
 
 This attack is 4 to 10 times more effective than the last-byte synchronization. This is possible due to the fact that HTTP/2 allows HTTP requests to be sent over a single connection concurrently, whereas in HTTP/1.1 they have to be sequential.
 
-### Detecting and exploiting limit overrun race conditions with Burp Suite
+Web servers often delay requests that are sent too quickly and that means that you can send a single packet with a whole load of dummy requests in the middle of it which will cause a server side delay and mean that when your fast processing request at the end is reached it lines everything up perfectly so because with this everything is reaching the server at the same time and the server is injecting the delay for us network jitter is no longer going to make our attack fail.
+
+A single-packet attack, also known as a single-packet authorization attack, utilizes Nagle's algorithm to exploit race conditions. Nagle's algorithm is designed to reduce network congestion by combining multiple small outgoing messages into a single packet. Attackers leverage this behavior to send a carefully timed packet that splits into multiple parts due to the algorithm's buffering. This split timing can align the critical section of concurrent requests, increasing the likelihood of triggering a race condition vulnerability.
+
+The single-packet attack makes remote races local.
+
+#### Connection warming
+
+Back-end connection delays don't usually interfere with race condition attacks because they typically delay parallel requests equally, so the requests stay in sync.
+
+It's essential to be able to distinguish these delays from those caused by endpoint-specific factors. One way to do this is by "warming" the connection with one or more inconsequential requests to see if this smoothes out the remaining processing times. In Burp Repeater, you can try adding a GET request for the homepage to the start of your tab group, then using the Send group in sequence (single connection) option.
+
+If the first request still has a longer processing time, but the rest of the requests are now processed within a short window, you can ignore the apparent delay and continue testing as normal.
+
+If you still see inconsistent response times on a single endpoint, even when using the single-packet technique, this is an indication that the back-end delay is interfering with your attack. You may be able to work around this by using Turbo Intruder to send some connection warming requests before following up with your main attack requests.
+
+#### Abusing rate or resource limits
+
+If connection warming doesn't make any difference, there are various solutions to this problem.
+
+Using Turbo Intruder, you can introduce a short client-side delay. However, as this involves splitting your actual attack requests across multiple TCP packets, you won't be able to use the single-packet attack technique. As a result, on high-jitter targets, the attack is unlikely to work reliably regardless of what delay you set.
+
+Instead, you may be able to solve this problem by abusing a common security feature.
+
+Web servers often delay the processing of requests if too many are sent too quickly. By sending a large number of dummy requests to intentionally trigger the rate or resource limit, you may be able to cause a suitable server-side delay. This makes the single-packet attack viable even when delayed execution is required.
+
+### How to detect and exploit limit race conditions with Burp Suite?
 
 #### Burp Repeater
 
@@ -191,50 +207,244 @@ def queueRequests(target, wordlists):
 
 For more details, see the `race-single-packet-attack.py` template provided in Turbo Intruder's default examples directory.
 
-### Predict a potential collision
+### What is sub-state in the context of race condition vulnerabilities?
 
-- **Is this endpoint security critical?**
+Sub-state refers to the intermediate states or conditions that a system or process goes through while transitioning from one stable state to another. These sub-states are critical because race conditions often exploit the brief moments when the system is in these intermediate states. During these sub-states, multiple threads or processes might concurrently access shared resources, leading to unpredictable and potentially harmful behavior if proper synchronization is not enforced.
 
-    Many endpoints don't touch critical functionality, so they're not worth testing.
+Imagine a banking application that allows users to transfer money. When user A initiates a transfer, the system first checks if the account has sufficient funds (sub-state) before proceeding with the transfer. In a race condition scenario, user B, acting simultaneously, initiates a similar transfer from the same account. Both requests reach the system at almost the same time, both see sufficient funds, and both proceed with the transfer, resulting in an overdrawn account. This happens because the critical sub-state was not adequately synchronized.
 
-- **Is there any collision potential?**
+### Methodology for detecting race condition vulnerabilities
 
-    For a successful collision, you typically need two or more requests that trigger operations on the same record.
+The methodology can be summarized in three words: **predict**, **benchmark**, **probe**, and **prove**.
+
+### Predict potential collisions
+
+A race condition vulnerability requires a 'collision' - two concurrent operations on a shared resource. We can use five key questions to rule out endpoints that are unlikely to cause collisions.
+
+For each object and the associated endpoints, ask:
+
+1. How is the state stored?
+
+   - Data stored in a persistent server-side data structure is ideal for exploitation. Some endpoints store their state entirely client-side, such as password resets that work by emailing a JWT—these can be safely skipped.
+   - Applications often store some state in the user session, offering some protection against sub-states.
+
+2. Are we editing or appending?
+
+   - Operations that edit existing data (e.g., changing an account's primary email address) have ample collision potential.
+   - Actions that simply append to existing data (e.g., adding an additional email address) are unlikely to be vulnerable to anything other than limit-overrun attacks.
+
+3. What's the operation keyed on?
+
+   - Most endpoints operate on a specific record, which is looked up using a 'key' (e.g., username, password reset token, or filename). For a successful attack, we need two operations that use the same key.
+
+4. Is this endpoint security critical?
+
+    - Many endpoints don't touch critical functionality and are not worth testing.
+
+5. Is there any collision potential?
+
+    - For a successful collision, you typically need two or more requests that trigger operations on the same record.
 
 ### Benchmark the behavior
 
-Craft chaotic blend of conflicting requests.
-
-Benchmark expected behavior:
+Craft a chaotic blend of conflicting requests to benchmark expected behavior:
 
 - Send request blend in sequence.
-- Analyze responses, timing, emails, side-effects.
+- Analyze responses, timing, emails, and side effects.
 
 ### Probe for clues
 
-- Send request blend in parallel.
-- Look for anomalies.
-- No anomalies? Tune timing to tighten execution spread.
+To recognize clues, first benchmark how the endpoint behaves under normal conditions:
+
+1. Send the same group of requests at once using the single-packet attack (or last-byte sync if HTTP/2 isn't supported) to minimize network jitter.
+
+2. Look for deviations from what you observed during benchmarking. This includes changes in responses, different email contents, or visible changes in the application's behavior.
+
+**Steps:**
+
+- Prepare your blend of requests, targeting endpoints and parameters to trigger all relevant code paths.
+- Use multiple requests to trigger each code path multiple times with different input values.
+- Benchmark the endpoints by sending your request-blend with a few seconds between each request.
+- Use the single-packet attack to issue all the requests at once (Turbo Intruder or Repeater 'Send group in parallel' option).
+- Analyze the results and look for clues indicating a deviation from the benchmarked behavior.
+
+**Potential clues:**
+
+- Shorter request processing time (indicates data passing to a separate thread).
+- Longer request processing time (indicates resource limits or locking to avoid concurrency issues).
 
 ### Prove the concept
 
-Understand & Clean
+Understand what’s happening, remove superfluous requests, and ensure you can still replicate the effects. Advanced race conditions can cause unusual and unique primitives, so the path to maximum impact isn't always immediately obvious. It may help to think of each race condition as a structural weakness rather than an isolated vulnerability.
 
-- Trim superfluous requests.
-- Tune the timing.
-- Automate retries.
+**Steps:**
 
-Explore impact
+1. **Understand & clean:**
+   - Trim superfluous requests.
+   - Tune the timing.
+   - Automate retries.
 
-- Think of it as a structural weakness.
-- Look for chains & variations.
-- Don't stop at the first exploit.
+2. **Explore impact:**
+   - Treat it as a structural weakness rather than an isolated vulnerability.
+   - Look for chains & variations.
+   - Don’t stop at the first exploit.
 
-Sometimes rate limit is enforced per-username rather than per-session.
+**Note**: some frameworks attempt to prevent accidental data corruption by using some form of request locking. For example, PHP's native session handler module only processes one request per session at a time. It's extremely important to spot this kind of behavior as it can otherwise mask trivially exploitable vulnerabilities. If you notice that all of your requests are being processed sequentially, try sending each of them using a different session token.
+
+**Note**: sometimes rate limits are enforced per-username rather than per-session.
+
+**Note**: for this attack to work, the different operations performed by each process must occur in just the right order. It would likely require multiple attempts, or a bit of luck, to achieve the desired outcome.
+
+**Note**: it's possible to cause similar partial construction collisions with a password rather than an API key. However, as passwords are hashed, this means you need to inject a value that makes the hash digest match the uninitialized value.
+
+### Bypassing rate-limits for the login functionality
+
+Most frameworks implement some kind of protection against automated attacks like rate-limiting or CAPTCHA challenges. In case of rate-limiting the usual approach is to temporarily block the account referencing to it by some unique value (like username) to prevent further login attempts.
+
+However sometimes applications fail to adequately protect the login functionality from the multiple parallel requests making it ideal target for race condition attacks.
+
+The Turbo Intruder script below allows you to automate such attack by sending multiple login requests in a single packet:
+
+```python
+def queueRequests(target, wordlists):
+
+    # as the target supports HTTP/2, use engine=Engine.BURP2 and concurrentConnections=1 for a single-packet attack
+    engine = RequestEngine(endpoint=target.endpoint,
+                           concurrentConnections=1,
+                           engine=Engine.BURP2
+                           )
+    
+    # assign the list of candidate passwords from your clipboard
+    passwords = wordlists.clipboard
+    
+    # queue a login request using each password from the wordlist
+    # the 'gate' argument withholds the final part of each request until engine.openGate() is invoked
+    for password in passwords:
+        engine.queue(target.req, password, gate='1')
+    
+    # once every request has been queued
+    # invoke engine.openGate() to send all requests in the given gate simultaneously
+    engine.openGate('1')
+
+
+def handleResponse(req, interesting):
+    table.add(req)
+```
+
+Please, consider the following things before running the script above:
+
+1. Note that this attack will work only if the target supports `HTTP/2`.
+
+2. Note that the candidate passwords are taken from the clipboard by referencing `wordlists.clipboard`, so make sure you copied the list of candidate passwords to a clipboard before running the script.
+
+3. Note that the value of the password parameter is automatically marked as a payload position with the `%s` placeholder, so make sure that the placeholder is presented in the request editor.
+
+### Associating an arbitrary email address with your account
+
+If you have an application where users are invited over email and some user has a pending invite to be an administrator for the site, but they have not yet created an account. Therefore, any user who successfully claims this address will automatically inherit admin privileges.
+
+The basic idea is to send parallel requests with different values (for example, email addresses) to the endpoint updating email to trigger the race condition.
+
+If you are lucky enough you can find out that a confirmation link or OTP were sent to a different email address that is different from the original.
+
+For example the confirmation link for user A can be sent to the email address of user B and vice versa.
+
+Email address confirmations, or any email-based operations, are generally a good target for single-endpoint race conditions. Emails are often sent in a background thread after the server issues the HTTP response to the client, making race conditions more likely.
+
+## Partial construction race conditions
+
+Many applications create objects in multiple steps, which may introduce a temporary middle state in which the object is exploitable.
+
+For example, when registering a new user, an application may create the user in the database and set their API key using two separate SQL statements. This leaves a tiny window in which the user exists, but their API key is uninitialized.
+
+This kind of behavior paves the way for exploits whereby you inject an input value that returns something matching the uninitialized database value, such as an empty string, or null in JSON, and this is compared as part of a security control.
+
+Frameworks often let you pass in arrays and other non-string data structures using non-standard syntax. For example, in PHP:
+
+`param[]=foo` is equivalent to `param = ['foo']`
+`param[]=foo&param[]=bar` is equivalent to `param = ['foo', 'bar']`
+`param[]` is equivalent to `param = []`
+
+Ruby on Rails lets you do something similar by providing a query or POST parameter with a key but no value. In other words `param[key]` results in the following server-side object:
+
+```ruby
+params = {"param"=>{"key"=>nil}}
+```
+
+In the example above, this means that during the race window, you could potentially make authenticated API requests as follows:
+
+```http
+GET /api/user/info?user=victim&api-key[]= HTTP/2
+Host: vulnerable-website.com
+```
+
+Also try to send different values:
+
+- submit an arbitrary token;
+- remove the param altogether;
+- submit an empty token param.
+
+In the Python editor, modify the main body of the template as follows:
+
+Define a variable containing the confirmation request you've been testing in Repeater.
+Create a loop that queues a single registration request using a new username for each attempt. Set the gate argument to match the current iteration.
+Create a nested loop that queues a large number of confirmation requests for each attempt. These should also use the same release gate.
+Open the gate for all the requests in each attempt at the same time.
+
+The resulting script should look something like this:
+
+```python
+def queueRequests(target, wordlists):
+
+    engine = RequestEngine(endpoint=target.endpoint,
+                            concurrentConnections=1,
+                            engine=Engine.BURP2
+                            )
+    
+    confirmationReq = '''POST /confirm?token[]= HTTP/2
+Host: example.com
+Cookie: sessionid=SESSION-TOKEN
+Content-Length: 0
+
+'''
+    for attempt in range(20):
+        currentAttempt = str(attempt)
+        username = 'User' + currentAttempt
+    
+        # queue a single registration request
+        engine.queue(target.req, username, gate=currentAttempt)
+        
+        # queue 50 confirmation requests - note that this will probably sent in two separate packets
+        for i in range(50):
+            engine.queue(confirmationReq, gate=currentAttempt)
+        
+        # send all the queued requests for this attempt
+        engine.openGate(currentAttempt)
+
+def handleResponse(req, interesting):
+    table.add(req)
+```
+
+Note that you need the server to begin creating the pending user in the database, then compare the token you send in the confirmation request before the user creation is complete.
+
+### Time-sensitive attacks
+
+Sometimes you may not find race conditions, but the techniques for delivering requests with precise timing can still reveal the presence of other vulnerabilities.
+
+One such example is when high-resolution timestamps are used instead of cryptographically secure random strings to generate security tokens.
+
+Consider a password reset token that is only randomized using a timestamp. In this case, it might be possible to trigger two password resets for two different users, which both use the same token. All you need to do is time the requests so that they generate the same timestamp.
 
 ## How to prevent race condition vulnerabilities?
 
-ToDo
+When a single request can transition an application through invisible sub-states, understanding and predicting its behavior is extremely difficult. This makes defense impractical. To secure an application properly, we recommend eliminating sub-states from all sensitive endpoints by applying the following strategies:
+
+- Avoid mixing data from different storage places.
+- Ensure sensitive endpoints make state changes atomic by using the datastore's concurrency features. For example, use a single database transaction to check the payment matches the cart value and confirm the order.
+- As a defense-in-depth measure, take advantage of datastore integrity and consistency features like column uniqueness constraints.
+- Don't attempt to use one data storage layer to secure another. For example, sessions aren't suitable for preventing limit overrun attacks on databases.
+- Ensure your session handling framework keeps sessions internally consistent. Updating session variables individually instead of in a batch might be a tempting optimization, but it's extremely dangerous. This goes for ORMs too; by hiding away concepts like transactions, they're taking on full responsibility for them.
+- In some architectures, it may be appropriate to avoid server-side state entirely. Instead, you could use encryption to push the state client-side, for example, using JWTs. Note that this has its own risks, as we've covered extensively in our topic on JWT attacks.
 
 ## Interactive checklist
 
