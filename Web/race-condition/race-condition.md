@@ -32,17 +32,13 @@ The impact of race condition vulnerabilities can be significant and varied, depe
 
 6. **Privilege escalation**: exploiting race conditions can allow attackers to escalate their privileges, gaining higher-level access and control over the system than intended.
 
-7. **Code execution**: in some cases, race conditions can be exploited to execute arbitrary code, potentially allowing attackers to take full control of the affected system.
-
 ## How to test for race condition vulnerabilities?
 
-The primary challenge when testing for race conditions is timing the requests so that at least two race windows line up, causing a collision. This window is often just milliseconds and can be even shorter.
+The primary challenge when testing for race conditions is timing the requests so that at least two race windows line up, causing a collision. This window is often just milliseconds and can be even shorter. Even if you send all of the requests at exactly the same time, in practice there are various uncontrollable and unpredictable external factors that affect when the server processes each request and in which order.
 
-Even if you send all of the requests at exactly the same time, in practice there are various uncontrollable and unpredictable external factors that affect when the server processes each request and in which order.
+### Factors that affect the exploitation of race condition vulnerabilities
 
-### What factors do affect the exploitation of race condition vulnerabilities?
-
-The image below illustrates how two parallel requests sent at the same time experience different stages of latency:
+Many things might affect the time it takes from a request to reach the destination server and receive its response back. Unfortunately most of them are out of our control but we can use different techniques to minimize their impact. The image below illustrates how two parallel requests sent at the same time experience different stages of latency:
 
 ![https://portswigger.net/web-security/race-conditions/images/race-conditions-basic.png](race-conditions-basic.png)
 
@@ -50,19 +46,29 @@ The critical area, marked as the "race window," shows where the timing overlap o
 
 #### Network latency
 
-Network latency refers to the time it takes for data to travel from its source to its destination across a network. It's usually measured in milliseconds. Imagine you're sending a message to a friend in another country via a messenger. Network latency is the time from when you press "send" on your phone until your friend's phone receives the message. If the network latency is high, there might be a noticeable delay before your friend sees the message.
+Network latency refers to **the time it takes for data to travel from its source to its destination across a network**. It's usually measured in milliseconds (ms).
+
+Imagine you're sending a message to a friend in another country via a messenger. Network latency is the time from when you press "send" on your phone until your friend's phone receives the message. If the network latency is high, there might be a noticeable delay before your friend sees the message.
+
+![https://www.keycdn.com/img/support/network-latency-lg.webp](network-latency-lg.webp)
 
 #### Jitter
 
-Jitter involves the variation in packet arrival time. It's a measure of the consistency of latency. In simpler terms, if latency is how long it takes for packets to reach their destination, jitter is how much those times vary from packet to packet. Consider a video call. If every piece of data (video frame, audio packet) arrives at a regular interval, you'll see a smooth conversation. But if some packets get delayed more than others (because of varying latencies), you'll notice glitches or interruptions in the video or audio. This inconsistency is jitter.
+Jitter involves the variation in packet arrival time. It's a measure of the consistency of latency. In simpler terms, if latency is how long it takes for packets to reach their destination, **jitter is how much those times vary from packet to packet**.
+
+Consider a video call. If every piece of data (video frame, audio packet) arrives at a regular interval, you'll see a smooth conversation. But if some packets get delayed more than others (because of varying latencies), you'll notice glitches or interruptions in the video or audio. This inconsistency is jitter.
+
+![https://assets.sonary.com/wp-content/uploads/2020/11/29084542/jitter1.png](jitter.png)
 
 #### Internal latency
 
-Internal latency refers specifically to delays within a network system or device, rather than delays caused by the physical distance the data must travel. This could be due to processing times within network devices like routers or switches. When you access a website, your data passes through several devices on your local network before reaching the internet. If your router is old or overwhelmed with traffic, it might slow down the processing of your data, adding to the overall latency. This delay caused by your router is a type of internal latency.
+Internal latency refers specifically to delays within a network system or device, rather than delays caused by the physical distance the data must travel. This could be due to processing times within network devices like routers or switches.
+
+When you access a website, your data passes through several devices on your local network before reaching the internet. If your router is old or overwhelmed with traffic, it might slow down the processing of your data, adding to the overall latency. This delay caused by your router is a type of internal latency.
 
 #### Race window
 
-The period of time during which a collision is possible is known as the "race window". This could be the fraction of a second between two interactions with the database, for example.
+**The period of time during which a collision is possible** is known as the "race window". This could be the fraction of a second between two interactions with the database, for example.
 
 #### Delays introduced by network architecture
 
@@ -74,33 +80,33 @@ Different endpoints inherently vary in their processing times, sometimes signifi
 
 ### How to overcome the factors that affect the exploitation of race condition vulnerabilities?
 
-Basically, there are two ways to overcome network latencies: **last-byte synchronization** and **single-packet attack**.
+There are multiple techniques that allow us to minimize the affect of some of the latencies, most of them try to deal with jitter. No technique is ideal and doesn't guarantee to work every single time but can work after a few attempts.
 
 #### Last-byte synchronization attack
 
-Last-byte synchronization attack was invented before the single-packet attack and exploits the fact that the web server won't start to process a request until the whole request has arrived so by withholding the final bite and putting that in a separate packet you make the final packet of each request really small and kind of make things a little bit more reliable.
+Last-byte synchronization attack was invented before the single-packet attack and exploits the fact that **the web server won't start to process a request until the whole request has arrived** so by withholding the final bite and putting that in a separate packet you make the final packet of each request really small and kind of make things a little bit more reliable.
 
-Last-byte synchronization is a technique used to test for race condition vulnerabilities by ensuring that multiple threads or requests reach the critical point of their execution simultaneously. This is done by **synchronizing the sending of the last byte of each request so that they are processed at the same time**.
+In other words **by synchronizing the sending of the last byte of each request we force them to be processed at the same time**.
 
 The main drawback is that this method requires precise timing, which can be difficult to achieve consistently due to variations in network latency and system processing times. This makes it less reliable for detecting race conditions under varying real-world conditions like jitter.
 
 #### Single-packet attack
 
-The single-packet attack enables you to completely neutralize interference from network jitter by using a single TCP packet to complete 20-30 requests simultaneously. Although you can often use just two requests to trigger an exploit, sending a large number of requests like this helps to mitigate internal latency, also known as server-side jitter.
+The single-packet attack enables you to completely neutralize interference from network jitter by using a single TCP packet to complete twenty to thirty requests simultaneously. Although you can often use just two requests to trigger an exploit, sending a large number of requests like this helps to mitigate internal latency, also known as server-side jitter.
 
-This attack is 4 to 10 times more effective than the last-byte synchronization. This is possible due to the fact that HTTP/2 allows HTTP requests to be sent over a single connection concurrently, whereas in HTTP/1.1 they have to be sequential.
+This attack is 4 to 10 times more effective than the last-byte synchronization. This is possible due to the fact that `HTTP/2` allows HTTP requests to be sent over a single connection concurrently, whereas in `HTTP/1.1` they have to be sequential.
 
-Web servers often delay requests that are sent too quickly and that means that you can send a single packet with a whole load of dummy requests in the middle of it which will cause a server side delay and mean that when your fast processing request at the end is reached it lines everything up perfectly so because with this everything is reaching the server at the same time and the server is injecting the delay for us network jitter is no longer going to make our attack fail.
+Web servers often delay requests that are sent too quickly and that means that you can send a single packet with a whole load of dummy requests in the middle of it which will cause a server side delay and mean that when your fast processing request at the end is reached it lines everything up perfectly so because with this everything is reaching the server at the same time and the server is injecting the delay for us network jitter is no longer going to make the attack fail.
 
-A single-packet attack, also known as a single-packet authorization attack, utilizes Nagle's algorithm to exploit race conditions. Nagle's algorithm is designed to reduce network congestion by combining multiple small outgoing messages into a single packet. Attackers leverage this behavior to send a carefully timed packet that splits into multiple parts due to the algorithm's buffering. This split timing can align the critical section of concurrent requests, increasing the likelihood of triggering a race condition vulnerability.
+This attack utilizes Nagle's algorithm to exploit race conditions.
 
-The single-packet attack makes remote races local.
+It is designed to **reduce network congestion by combining multiple small outgoing messages into a single packet**. Attackers leverage this behavior to send a carefully timed packet that splits into multiple parts due to the algorithm's buffering. This split timing can align the critical section of concurrent requests, increasing the likelihood of triggering a race condition vulnerability.
 
 #### Connection warming
 
 Back-end connection delays don't usually interfere with race condition attacks because they typically delay parallel requests equally, so the requests stay in sync.
 
-It's essential to be able to distinguish these delays from those caused by endpoint-specific factors. One way to do this is by "warming" the connection with one or more inconsequential requests to see if this smoothes out the remaining processing times. In Burp Repeater, you can try adding a GET request for the homepage to the start of your tab group, then using the Send group in sequence (single connection) option.
+It's essential to be able to distinguish these delays from those caused by endpoint-specific factors. One way to do this is by "warming" the connection with one or more inconsequential requests to see if this smoothes out the remaining processing times. In Burp Repeater, you can try adding a `GET` request for the homepage to the start of your tab group, then using the "Send group in sequence (single connection)" option.
 
 If the first request still has a longer processing time, but the rest of the requests are now processed within a short window, you can ignore the apparent delay and continue testing as normal.
 
@@ -116,7 +122,17 @@ Instead, you may be able to solve this problem by abusing a common security feat
 
 Web servers often delay the processing of requests if too many are sent too quickly. By sending a large number of dummy requests to intentionally trigger the rate or resource limit, you may be able to cause a suitable server-side delay. This makes the single-packet attack viable even when delayed execution is required.
 
-### How to detect and exploit limit race conditions with Burp Suite?
+### Sub-state
+
+Sub-state refers to the intermediate states or conditions that a system or process goes through while transitioning from one stable state to another.
+
+These sub-states are critical because race conditions often exploit the brief moments when the system is in these intermediate states. During these sub-states, multiple threads or processes might concurrently access shared resources, leading to unpredictable and potentially harmful behavior if proper synchronization is not enforced.
+
+Imagine a banking application that allows users to transfer money.
+
+When User A initiates a transfer, the system first checks if the account has sufficient funds (sub-state) before proceeding with the transfer. In a race condition scenario, User B, acting simultaneously, initiates a similar transfer from the same account. Both requests reach the system at almost the same time, both see sufficient funds, and both proceed with the transfer, resulting in an overdrawn account. This happens because the critical sub-state was not adequately synchronized.
+
+### Exploit race conditions with Burp Suite
 
 #### Burp Repeater
 
@@ -207,52 +223,46 @@ def queueRequests(target, wordlists):
 
 For more details, see the `race-single-packet-attack.py` template provided in Turbo Intruder's default examples directory.
 
-### What is sub-state in the context of race condition vulnerabilities?
+### Methodology
 
-Sub-state refers to the intermediate states or conditions that a system or process goes through while transitioning from one stable state to another. These sub-states are critical because race conditions often exploit the brief moments when the system is in these intermediate states. During these sub-states, multiple threads or processes might concurrently access shared resources, leading to unpredictable and potentially harmful behavior if proper synchronization is not enforced.
+The methodology can be summarized in four words: **predict**, **benchmark**, **probe**, and **prove**.
 
-Imagine a banking application that allows users to transfer money. When user A initiates a transfer, the system first checks if the account has sufficient funds (sub-state) before proceeding with the transfer. In a race condition scenario, user B, acting simultaneously, initiates a similar transfer from the same account. Both requests reach the system at almost the same time, both see sufficient funds, and both proceed with the transfer, resulting in an overdrawn account. This happens because the critical sub-state was not adequately synchronized.
+#### Predict potential collisions
 
-### Methodology for detecting race condition vulnerabilities
-
-The methodology can be summarized in three words: **predict**, **benchmark**, **probe**, and **prove**.
-
-### Predict potential collisions
-
-A race condition vulnerability requires a 'collision' - two concurrent operations on a shared resource. We can use five key questions to rule out endpoints that are unlikely to cause collisions.
+A race condition vulnerability requires a 'collision' - two concurrent operations on a shared resource. You can use five key questions to rule out endpoints that are unlikely to cause collisions.
 
 For each object and the associated endpoints, ask:
 
-1. How is the state stored?
+1. **How is the state stored?**
 
    - Data stored in a persistent server-side data structure is ideal for exploitation. Some endpoints store their state entirely client-side, such as password resets that work by emailing a JWT—these can be safely skipped.
    - Applications often store some state in the user session, offering some protection against sub-states.
 
-2. Are we editing or appending?
+2. **Are we editing or appending?**
 
    - Operations that edit existing data (e.g., changing an account's primary email address) have ample collision potential.
    - Actions that simply append to existing data (e.g., adding an additional email address) are unlikely to be vulnerable to anything other than limit-overrun attacks.
 
-3. What's the operation keyed on?
+3. **What's the operation keyed on?**
 
    - Most endpoints operate on a specific record, which is looked up using a 'key' (e.g., username, password reset token, or filename). For a successful attack, we need two operations that use the same key.
 
-4. Is this endpoint security critical?
+4. **Is this endpoint security critical?**
 
     - Many endpoints don't touch critical functionality and are not worth testing.
 
-5. Is there any collision potential?
+5. **Is there any collision potential?**
 
     - For a successful collision, you typically need two or more requests that trigger operations on the same record.
 
-### Benchmark the behavior
+#### Benchmark the behavior
 
 Craft a chaotic blend of conflicting requests to benchmark expected behavior:
 
 - Send request blend in sequence.
 - Analyze responses, timing, emails, and side effects.
 
-### Probe for clues
+#### Probe for clues
 
 To recognize clues, first benchmark how the endpoint behaves under normal conditions:
 
@@ -273,7 +283,7 @@ To recognize clues, first benchmark how the endpoint behaves under normal condit
 - Shorter request processing time (indicates data passing to a separate thread).
 - Longer request processing time (indicates resource limits or locking to avoid concurrency issues).
 
-### Prove the concept
+#### Prove the concept
 
 Understand what’s happening, remove superfluous requests, and ensure you can still replicate the effects. Advanced race conditions can cause unusual and unique primitives, so the path to maximum impact isn't always immediately obvious. It may help to think of each race condition as a structural weakness rather than an isolated vulnerability.
 
@@ -289,15 +299,9 @@ Understand what’s happening, remove superfluous requests, and ensure you can s
    - Look for chains & variations.
    - Don’t stop at the first exploit.
 
-**Note**: some frameworks attempt to prevent accidental data corruption by using some form of request locking. For example, PHP's native session handler module only processes one request per session at a time. It's extremely important to spot this kind of behavior as it can otherwise mask trivially exploitable vulnerabilities. If you notice that all of your requests are being processed sequentially, try sending each of them using a different session token.
+### Examples of race conditions
 
-**Note**: sometimes rate limits are enforced per-username rather than per-session.
-
-**Note**: for this attack to work, the different operations performed by each process must occur in just the right order. It would likely require multiple attempts, or a bit of luck, to achieve the desired outcome.
-
-**Note**: it's possible to cause similar partial construction collisions with a password rather than an API key. However, as passwords are hashed, this means you need to inject a value that makes the hash digest match the uninitialized value.
-
-### Bypassing rate-limits for the login functionality
+#### Multi-endpoint race conditions
 
 Most frameworks implement some kind of protection against automated attacks like rate-limiting or CAPTCHA challenges. In case of rate-limiting the usual approach is to temporarily block the account referencing to it by some unique value (like username) to prevent further login attempts.
 
@@ -339,7 +343,7 @@ Please, consider the following things before running the script above:
 
 3. Note that the value of the password parameter is automatically marked as a payload position with the `%s` placeholder, so make sure that the placeholder is presented in the request editor.
 
-### Associating an arbitrary email address with your account
+#### Single-endpoint race conditions
 
 If you have an application where users are invited over email and some user has a pending invite to be an administrator for the site, but they have not yet created an account. Therefore, any user who successfully claims this address will automatically inherit admin privileges.
 
@@ -351,7 +355,7 @@ For example the confirmation link for user A can be sent to the email address of
 
 Email address confirmations, or any email-based operations, are generally a good target for single-endpoint race conditions. Emails are often sent in a background thread after the server issues the HTTP response to the client, making race conditions more likely.
 
-## Partial construction race conditions
+#### Partial construction race conditions
 
 Many applications create objects in multiple steps, which may introduce a temporary middle state in which the object is exploitable.
 
@@ -361,9 +365,9 @@ This kind of behavior paves the way for exploits whereby you inject an input val
 
 Frameworks often let you pass in arrays and other non-string data structures using non-standard syntax. For example, in PHP:
 
-`param[]=foo` is equivalent to `param = ['foo']`
-`param[]=foo&param[]=bar` is equivalent to `param = ['foo', 'bar']`
-`param[]` is equivalent to `param = []`
+- `param[]=foo` is equivalent to `param = ['foo']`
+- `param[]=foo&param[]=bar` is equivalent to `param = ['foo', 'bar']`
+- `param[]` is equivalent to `param = []`
 
 Ruby on Rails lets you do something similar by providing a query or POST parameter with a key but no value. In other words `param[key]` results in the following server-side object:
 
@@ -427,7 +431,7 @@ def handleResponse(req, interesting):
 
 Note that you need the server to begin creating the pending user in the database, then compare the token you send in the confirmation request before the user creation is complete.
 
-### Time-sensitive attacks
+#### Time-sensitive conditions
 
 Sometimes you may not find race conditions, but the techniques for delivering requests with precise timing can still reveal the presence of other vulnerabilities.
 
@@ -435,20 +439,36 @@ One such example is when high-resolution timestamps are used instead of cryptogr
 
 Consider a password reset token that is only randomized using a timestamp. In this case, it might be possible to trigger two password resets for two different users, which both use the same token. All you need to do is time the requests so that they generate the same timestamp.
 
+### Tips
+
+Below you will find some tips that complement the previous information:
+
+1. Some frameworks attempt to prevent accidental data corruption by using some form of request locking. For example, PHP's native session handler module only processes one request per session at a time. It's extremely important to spot this kind of behavior as it can otherwise mask trivially exploitable vulnerabilities. If you notice that all of your requests are being processed sequentially, try sending each of them using a different session token.
+
+2. Sometimes rate limits are enforced per-username rather than per-session.
+
+3. For this attack to work, the different operations performed by each process must occur in just the right order. It would likely require multiple attempts, or a bit of luck, to achieve the desired outcome.
+
+4. It's possible to cause partial construction collisions with a password rather than an API key. However, as passwords are hashed, this means you need to inject a value that makes the hash digest match the uninitialized value.
+
+5. It's important to use the mentioned methodology even if you have source-code access because sometimes it's extremely challenging to identify race conditions through pure code analysis.
+
+6. The single-packet attack makes remote races local. In other words this technique is used to synchronize multiple requests in such a way that they are processed almost simultaneously by the server, effectively creating a situation similar to a local race condition.
+
 ## How to prevent race condition vulnerabilities?
 
-When a single request can transition an application through invisible sub-states, understanding and predicting its behavior is extremely difficult. This makes defense impractical. To secure an application properly, we recommend eliminating sub-states from all sensitive endpoints by applying the following strategies:
+When a single request can transition an application through invisible sub-states, understanding and predicting its behavior is extremely difficult. This makes defense impractical. To secure an application properly, it's recommended to eliminate sub-states from all sensitive endpoints by applying the following strategies:
 
 - Avoid mixing data from different storage places.
 - Ensure sensitive endpoints make state changes atomic by using the datastore's concurrency features. For example, use a single database transaction to check the payment matches the cart value and confirm the order.
 - As a defense-in-depth measure, take advantage of datastore integrity and consistency features like column uniqueness constraints.
 - Don't attempt to use one data storage layer to secure another. For example, sessions aren't suitable for preventing limit overrun attacks on databases.
 - Ensure your session handling framework keeps sessions internally consistent. Updating session variables individually instead of in a batch might be a tempting optimization, but it's extremely dangerous. This goes for ORMs too; by hiding away concepts like transactions, they're taking on full responsibility for them.
-- In some architectures, it may be appropriate to avoid server-side state entirely. Instead, you could use encryption to push the state client-side, for example, using JWTs. Note that this has its own risks, as we've covered extensively in our topic on JWT attacks.
+- In some architectures, it may be appropriate to avoid server-side state entirely. Instead, you could use encryption to push the state client-side, for example, using JWTs.
 
-## Interactive checklist
+## Checklist
 
-ToDo
+- [Google Table - Race Conditions](https://docs.google.com/spreadsheets/d/1vR7IDd4mE-0_mSVWdO4gFl_S6jhSpcKgIPz6a7t6Pps/edit?gid=126503623#gid=126503623)
 
 ## Labs
 
@@ -461,10 +481,10 @@ ToDo
 
 ## References
 
-- [Smashing the state machine: the true potential of web race conditions](https://portswigger.net/research/smashing-the-state-machine)
-- [Cracking reCAPTCHA, Turbo Intruder style](https://portswigger.net/research/cracking-recaptcha-turbo-intruder-style)
 - [Race conditions on the web](https://www.josipfranjkovic.com/blog/race-conditions-on-web)
-- [Timeless Timing Attacks: Exploiting Concurrency to Leak Secrets over Remote Connections](https://www.usenix.org/conference/usenixsecurity20/presentation/van-goethem)
-- [The single-packet attack: making remote race-conditions 'local'](https://portswigger.net/research/the-single-packet-attack-making-remote-race-conditions-local)
-- [Race Condition Vulnerabilities - PortSwigger](https://portswigger.net/web-security/race-conditions)
 - [Sending grouped HTTP requests](https://portswigger.net/burp/documentation/desktop/tools/repeater/send-group)
+- [Cracking reCAPTCHA, Turbo Intruder style](https://portswigger.net/research/cracking-recaptcha-turbo-intruder-style)
+- [Race Condition Vulnerabilities - PortSwigger](https://portswigger.net/web-security/race-conditions)
+- [The single-packet attack: making remote race-conditions 'local'](https://portswigger.net/research/the-single-packet-attack-making-remote-race-conditions-local)
+- [Smashing the state machine: the true potential of web race conditions](https://portswigger.net/research/smashing-the-state-machine)
+- [Timeless Timing Attacks: Exploiting Concurrency to Leak Secrets over Remote Connections](https://www.usenix.org/conference/usenixsecurity20/presentation/van-goethem)
