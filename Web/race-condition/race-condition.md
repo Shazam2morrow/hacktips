@@ -278,7 +278,7 @@ Understand what’s happening, remove superfluous requests, and ensure you can s
 
 #### Limit overrun race conditions
 
-The most well-known type of race condition enables you to exceed some kind of limit imposed by the business logic of the application. Limit overruns are a subtype of TOCTOU flaws. For example, email address confirmations, or any email-based operations, are generally a good target for single-endpoint race conditions. Emails are often sent in a background thread after the server issues the HTTP response to the client, making race conditions more likely.
+The most well-known type of race condition enables you to exceed some kind of limit imposed by the business logic of the application. Limit overruns are a subtype of TOCTOU flaws.
 
 The process of detecting and exploiting limit overrun race conditions is relatively simple:
 
@@ -332,15 +332,9 @@ A variation of this vulnerability can occur when payment validation and order co
 
 Sending parallel requests with different values to a single endpoint can sometimes trigger powerful race conditions.
 
-If you have an application where users are invited over email and some user has a pending invite to be an administrator for the site, but they have not yet created an account. Therefore, any user who successfully claims this address will automatically inherit admin privileges.
-
-The basic idea is to send parallel requests with different values (for example, email addresses) to the endpoint updating email to trigger the race condition.
-
-If you are lucky enough you can find out that a confirmation link or OTP were sent to a different email address that is different from the original.
-
-For example the confirmation link for user A can be sent to the email address of user B and vice versa.
-
 Email address confirmations, or any email-based operations, are generally a good target for single-endpoint race conditions. Emails are often sent in a background thread after the server issues the HTTP response to the client, making race conditions more likely.
+
+If you have an application where users are invited over email and some user has a pending invite to be an administrator for the site, but they haven't yet created an account. Therefore, any user who successfully claims this address will automatically inherit admin privileges. The basic idea is to send parallel requests with different values (for example, email addresses) to the endpoint updating email to trigger the race condition. If you are lucky enough you can find out that a confirmation link or OTP were sent to a different email address that is different from the original.
 
 #### Partial construction race conditions
 
@@ -350,7 +344,9 @@ For example, when registering a new user, an application may create the user in 
 
 This kind of behavior paves the way for exploits whereby you inject an input value that returns something matching the uninitialized database value, such as an empty string, or null in JSON, and this is compared as part of a security control.
 
-Frameworks often let you pass in arrays and other non-string data structures using non-standard syntax. For example, in PHP:
+Frameworks often let you pass in arrays and other non-string data structures using non-standard syntax.
+
+PHP interprets some values as:
 
 - `param[]=foo` is equivalent to `param = ['foo']`
 - `param[]=foo&param[]=bar` is equivalent to `param = ['foo', 'bar']`
@@ -369,28 +365,30 @@ GET /api/user/info?user=victim&api-key[]= HTTP/2
 Host: vulnerable-website.com
 ```
 
-Also try to send different values:
+It is also a good idea to try to send different values to benchmark the endpoint's behavior:
 
-- submit an arbitrary token;
-- remove the param altogether;
-- submit an empty token param.
+- Submit an arbitrary token.
+- Remove the param altogether.
+- Submit an empty token param.
 
 In the Python editor, modify the main body of the template as follows:
 
-Define a variable containing the confirmation request you've been testing in Repeater.
-Create a loop that queues a single registration request using a new username for each attempt. Set the gate argument to match the current iteration.
-Create a nested loop that queues a large number of confirmation requests for each attempt. These should also use the same release gate.
-Open the gate for all the requests in each attempt at the same time.
+1. Define a variable containing the confirmation request you've been testing in Repeater.
+2. Create a loop that queues a single registration request using a new username for each attempt.
+3. Set the `gate` argument to match the current iteration.
+4. Create a nested loop that queues a large number of confirmation requests for each attempt. These should also use the same release `gate`.
+5. Open the `gate` for all the requests in each attempt at the same time.
 
-The resulting script should look something like this:
+Sometimes an application might require you to confirm your email address in order to activate your account. Usually it's done by sending a unique one-time link to the associated email. It can happen that during this process the account would be in a partially initiated stated meaning that some values might be set as default. If you send the confirmation request during this state then the value of the verification token might be set to a predictable value (like empty string, null, 0 and etc) and you can verify your account without the actual link.
+
+For example, the Turbo Intruder script below creates multiple user accounts and each account is tried to be activated via using uninitialized request param:
 
 ```python
 def queueRequests(target, wordlists):
 
     engine = RequestEngine(endpoint=target.endpoint,
-                            concurrentConnections=1,
-                            engine=Engine.BURP2
-                            )
+                           concurrentConnections=1,
+                           engine=Engine.BURP2)
     
     confirmationReq = '''POST /confirm?token[]= HTTP/2
 Host: example.com
@@ -398,6 +396,7 @@ Cookie: sessionid=SESSION-TOKEN
 Content-Length: 0
 
 '''
+    # create 20 test accounts
     for attempt in range(20):
         currentAttempt = str(attempt)
         username = 'User' + currentAttempt
@@ -416,9 +415,9 @@ def handleResponse(req, interesting):
     table.add(req)
 ```
 
-Note that you need the server to begin creating the pending user in the database, then compare the token you send in the confirmation request before the user creation is complete.
+Note that you need the server to begin creating the pending user in the database, then compare the token you send in the confirmation request before the user creation is complete. That's the whole point of the attack.
 
-#### Time-sensitive conditions
+#### Time-sensitive attacks
 
 Sometimes you may not find race conditions, but the techniques for delivering requests with precise timing can still reveal the presence of other vulnerabilities.
 
